@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { loadSettings } from "../llm/settings";
-import { extractDocument } from "../llm/extract";
+import { extractDocument, dedupeIds } from "../llm/extract";
 import { validatePack } from "../validate";
 import type { ContentPack } from "../types";
 import { extractPdfText } from "../pdf/extractPdf";
@@ -74,6 +74,8 @@ export function ExtractModal({ onDone, onClose }: ExtractModalProps) {
   function handleSave() {
     try {
       const parsed = JSON.parse(packJson);
+      // 兜底:LLM 可能生成重复 id,保存前自动去重(再校验)
+      dedupeIds(parsed);
       const res = validatePack(parsed);
       if (!res.ok) {
         setError("校验失败:" + res.errors.slice(0, 3).join(";"));

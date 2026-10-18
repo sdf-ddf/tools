@@ -153,6 +153,39 @@ export async function extractChunk(settings: LLMSettings, chunk: string): Promis
   return parsed;
 }
 
+/**
+ * 修复 LLM 抽取结果中重复/缺失的 id:
+ * - 首次出现保留原 id;重复出现追加 -2、-3…
+ * - 缺失或非字符串 id 用父 id + 序号生成
+ * 递归处理整个 root 子树。
+ */
+export function dedupeIds(pack: unknown): void {
+  const p = pack as { root?: { id?: unknown; children?: unknown[]; [k: string]: unknown } };
+  const root = p?.root;
+  if (!root || typeof root !== "object") return;
+  const seen = new Set<string>();
+  const ensure = (id: unknown, fallback: string): string => {
+    let base = typeof id === "string" && id.trim() ? id.trim() : fallback;
+    let candidate = base;
+    let n = 2;
+    while (seen.has(candidate)) {
+      candidate = base + "-" + n;
+      n++;
+    }
+    seen.add(candidate);
+    return candidate;
+  };
+  const walk = (node: { id?: unknown; children?: unknown[]; [k: string]: unknown }, fallback: string) => {
+    node.id = ensure(node.id, fallback);
+    for (const child of node.children ?? []) {
+      if (child && typeof child === "object") {
+        walk(child as typeof node, String(node.id) + ".n");
+      }
+    }
+  };
+  walk(root, "root");
+}
+
 /** 文档全文 → ContentPack JSON 字符串(多块则合并) */
 export async function extractDocument(settings: LLMSettings, doc: string): Promise<ExtractionResult> {
   const chunks = chunkText(doc);
@@ -160,6 +193,7 @@ export async function extractDocument(settings: LLMSettings, doc: string): Promi
     if (chunks.length === 1) {
       const parsed = await extractChunk(settings, chunks[0]);
       if (!parsed) return { ok: false, error: "抽取失败:LLM 输出无法解析为 JSON(已重试一次)" };
+      dedupeIds(parsed);
       return { ok: true, packJson: JSON.stringify(parsed, null, 2) };
     }
     // 多块:逐块抽取子树,合并到一个合成根下
@@ -181,6 +215,7 @@ export async function extractDocument(settings: LLMSettings, doc: string): Promi
         children: roots.map((r) => (r as any).root ?? r),
       },
     };
+    dedupeIds(merged);
     return { ok: true, packJson: JSON.stringify(merged, null, 2) };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
