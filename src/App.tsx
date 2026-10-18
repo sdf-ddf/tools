@@ -291,7 +291,12 @@ export default function App() {
       </main>
 
       {showViz && (
-        <VizDrawer pack={pack} node={path[path.length - 1]} onClose={() => setShowViz(false)} />
+        <VizDrawer
+          pack={pack}
+          node={path[path.length - 1]}
+          onClose={() => setShowViz(false)}
+          onJump={handleJump}
+        />
       )}
 
       <footer className="statusbar">
