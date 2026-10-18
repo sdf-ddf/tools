@@ -138,7 +138,7 @@ export default function App() {
         <div className="brand">
           <span className="logo">◈</span>
           <span className="brand-name">Layerview</span>
-          <span className="brand-sub">分层透视镜 · M1</span>
+          <span className="brand-sub">分层透视镜 · 桌面版</span>
         </div>
 
         <div className="view-switch">
