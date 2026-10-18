@@ -5,6 +5,7 @@ import { NodePanel } from "./components/NodePanel";
 import { NetworkGraph } from "./components/NetworkGraph";
 import { SettingsModal } from "./components/SettingsModal";
 import { VizDrawer } from "./components/VizDrawer";
+import { ExtractModal } from "./components/ExtractModal";
 import { BUILTIN_PACKS } from "./data/packs";
 import type { ContentPack, LayerNode } from "./types";
 import { validatePack } from "./validate";
@@ -49,6 +50,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [llmSettings, setLlmSettings] = useState<LLMSettings>(() => loadSettings());
   const [showViz, setShowViz] = useState(false);
+  const [showExtract, setShowExtract] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const totalNodes = useMemo(() => collectIds(pack.root).length, [pack]);
@@ -185,6 +187,9 @@ export default function App() {
 
         <button className="tool-btn" onClick={handleExport}>导出</button>
         <button className="tool-btn" onClick={() => fileRef.current?.click()}>导入</button>
+        <button className="tool-btn accent2" onClick={() => setShowExtract(true)}>
+          ✨ 文档解析
+        </button>
         <button
           className="tool-btn accent"
           onClick={() => setShowSettings(true)}
@@ -210,6 +215,25 @@ export default function App() {
         <div className="import-toast" onClick={() => setImportMsg(null)}>
           {importMsg}
         </div>
+      )}
+
+      {showExtract && (
+        <ExtractModal
+          onDone={(newPack) => {
+            if (newPack) {
+              setPacks((prev) => {
+                const without = prev.filter((x) => x.id !== newPack.id);
+                return [...without, newPack];
+              });
+              setPackId(newPack.id);
+              setSelectedId(newPack.root.id);
+              setExpandedIds(new Set([newPack.root.id]));
+              setImportMsg("已导入解析结果「" + newPack.title + "」");
+            }
+            setShowExtract(false);
+          }}
+          onClose={() => setShowExtract(false)}
+        />
       )}
 
       {showSettings && (
