@@ -580,3 +580,16 @@ body {
 .viz-frame-label { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
 .viz-empty-hint .action-btn.jump { margin-top: 8px; padding: 5px 12px; }
 
+
+/* ---- M4.1:抽取参数与进度 ---- */
+.extract-params { display: flex; gap: 16px; margin: 6px 0 10px; }
+.extract-params label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.extract-params select {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  background: #fff;
+}
+.extract-progress { color: var(--accent); font-size: 12px; margin-top: 4px; }
+

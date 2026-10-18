@@ -19,6 +19,9 @@ export function ExtractModal({ onDone, onClose }: ExtractModalProps) {
   const [packJson, setPackJson] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pdfInfo, setPdfInfo] = useState<{ pages: number; chars: number } | null>(null);
+  const [maxDepth, setMaxDepth] = useState(4);
+  const [maxNodes, setMaxNodes] = useState(12);
+  const [progress, setProgress] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function handleFile(file: File) {
@@ -60,8 +63,13 @@ export function ExtractModal({ onDone, onClose }: ExtractModalProps) {
     }
     setError(null);
     setPhase("extracting");
+    setProgress("准备中…");
     const settings = loadSettings();
-    const result = await extractDocument(settings, text);
+    const result = await extractDocument(settings, text, {
+      maxDepth,
+      maxNodesPerLevel: maxNodes,
+      onProgress: (info) => setProgress(info.phase),
+    });
     if (!result.ok || !result.packJson) {
       setError(result.error ?? "抽取失败");
       setPhase(pdfInfo ? "pdfPreview" : "input");
@@ -125,6 +133,26 @@ export function ExtractModal({ onDone, onClose }: ExtractModalProps) {
               {fileName && <span className="extract-filename">{fileName}</span>}
               <span className="extract-or">或直接粘贴文本:</span>
             </div>
+            {(phase === "input" || phase === "pdfPreview") && (
+              <div className="extract-params">
+                <label>
+                  层级深度
+                  <select value={maxDepth} onChange={(e) => setMaxDepth(Number(e.target.value))}>
+                    {[2, 3, 4, 5].map((d) => (
+                      <option key={d} value={d}>{d} 层</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  每层节点上限
+                  <select value={maxNodes} onChange={(e) => setMaxNodes(Number(e.target.value))}>
+                    {[6, 10, 12, 16, 20].map((n) => (
+                      <option key={n} value={n}>{n} 个</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            )}
             {pdfInfo && phase === "pdfPreview" && (
               <div className="extract-preview-hint">
                 PDF 已提取 {pdfInfo.pages} 页 / {pdfInfo.chars} 字符。下方是提取出的文本(可编辑),确认后点「开始解析」。
@@ -150,6 +178,7 @@ export function ExtractModal({ onDone, onClose }: ExtractModalProps) {
           <div className="extract-busy">
             <div className="spinner" />
             <p>正在调用大模型解析文档…(流式输出,长文档会自动分块)</p>
+            {progress && <p className="extract-progress">{progress}</p>}
           </div>
         )}
 

@@ -26,7 +26,7 @@ with sync_playwright() as p:
 
     # mock 模式
     pg.locator(".tool-btn.accent").click(); pg.wait_for_timeout(300)
-    pg.locator(".modal select").select_option("mock"); pg.wait_for_timeout(200)
+    pg.locator(".modal select").first.select_option("mock"); pg.wait_for_timeout(200)
     pg.locator(".modal button", has_text="保存").click(); pg.wait_for_timeout(300)
 
     # 打开文档解析
