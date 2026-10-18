@@ -3,9 +3,12 @@ import { LayerTree } from "./components/LayerTree";
 import { SideNav } from "./components/SideNav";
 import { NodePanel } from "./components/NodePanel";
 import { NetworkGraph } from "./components/NetworkGraph";
+import { SettingsModal } from "./components/SettingsModal";
 import { BUILTIN_PACKS } from "./data/packs";
 import type { ContentPack, LayerNode } from "./types";
 import { validatePack } from "./validate";
+import { loadSettings, saveSettings } from "./llm/settings";
+import type { LLMSettings } from "./llm/types";
 
 function findPath(root: LayerNode, target: string): LayerNode[] | null {
   if (root.id === target) return [root];
@@ -42,6 +45,8 @@ export default function App() {
   const [searchQ, setSearchQ] = useState("");
   const [searchResults, setSearchResults] = useState<LayerNode[]>([]);
   const [importMsg, setImportMsg] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [llmSettings, setLlmSettings] = useState<LLMSettings>(() => loadSettings());
   const fileRef = useRef<HTMLInputElement>(null);
 
   const totalNodes = useMemo(() => collectIds(pack.root).length, [pack]);
@@ -178,6 +183,13 @@ export default function App() {
 
         <button className="tool-btn" onClick={handleExport}>导出</button>
         <button className="tool-btn" onClick={() => fileRef.current?.click()}>导入</button>
+        <button
+          className="tool-btn accent"
+          onClick={() => setShowSettings(true)}
+          title={llmSettings.model}
+        >
+          模型:{llmSettings.provider === "deepseek" ? "DeepSeek" : llmSettings.provider}
+        </button>
         <input
           ref={fileRef}
           type="file"
@@ -196,6 +208,18 @@ export default function App() {
         <div className="import-toast" onClick={() => setImportMsg(null)}>
           {importMsg}
         </div>
+      )}
+
+      {showSettings && (
+        <SettingsModal
+          current={llmSettings}
+          onSave={(s) => {
+            saveSettings(s);
+            setLlmSettings(s);
+            setShowSettings(false);
+          }}
+          onClose={() => setShowSettings(false)}
+        />
       )}
 
       <main className="workspace">
@@ -231,7 +255,12 @@ export default function App() {
         </section>
 
         <aside className="panel">
-          <NodePanel node={path[path.length - 1]} path={path} onJump={handleJump} />
+          <NodePanel
+            pack={pack}
+            node={path[path.length - 1]}
+            path={path}
+            onJump={handleJump}
+          />
         </aside>
       </main>
 
