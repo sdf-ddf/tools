@@ -3,6 +3,7 @@ import { LayerTree } from "./components/LayerTree";
 import { SideNav } from "./components/SideNav";
 import { NodePanel } from "./components/NodePanel";
 import { NetworkGraph } from "./components/NetworkGraph";
+import { ReaderView } from "./components/ReaderView";
 import { SettingsModal } from "./components/SettingsModal";
 import { VizDrawer } from "./components/VizDrawer";
 import { ExtractModal } from "./components/ExtractModal";
@@ -36,7 +37,7 @@ function searchNodes(node: LayerNode, q: string, acc: LayerNode[] = []): LayerNo
   return acc;
 }
 
-type ViewMode = "tree" | "network";
+type ViewMode = "tree" | "network" | "reader";
 
 export default function App() {
   const saved = useMemo(() => loadState(), []);
@@ -174,6 +175,12 @@ export default function App() {
           >
             网络
           </button>
+          <button
+            className={"view-btn" + (viewMode === "reader" ? " active" : "")}
+            onClick={() => setViewMode("reader")}
+          >
+            阅读
+          </button>
         </div>
 
         <div className="search-box">
@@ -296,7 +303,9 @@ export default function App() {
           <div className="canvas-hint">
             {viewMode === "tree"
               ? "单击节点:选中并展开/折叠 · 悬停:查看摘要"
-              : "拖拽节点调整位置 · 点击选中"}
+              : viewMode === "network"
+                ? "拖拽节点调整位置 · 点击选中"
+                : "线性阅读:点任意段落 → 右侧讲解"}
           </div>
           {viewMode === "tree" ? (
             <LayerTree
@@ -306,8 +315,10 @@ export default function App() {
               onSelect={setSelectedId}
               onToggle={handleToggle}
             />
-          ) : (
+          ) : viewMode === "network" ? (
             <NetworkGraph pack={pack} selectedId={selectedId} onSelect={setSelectedId} />
+          ) : (
+            <ReaderView pack={pack} selectedId={selectedId} onSelect={setSelectedId} />
           )}
         </section>
 

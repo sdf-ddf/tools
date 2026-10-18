@@ -7,7 +7,7 @@ export interface PersistedState {
   customPacks: ContentPack[]; // 用户导入/解析生成的内容包
   packId: string;
   selectedId: string;
-  viewMode: "tree" | "network";
+  viewMode: "tree" | "network" | "reader";
   expandedIds: string[];
 }
 

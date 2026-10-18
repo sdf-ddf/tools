@@ -927,3 +927,43 @@ body {
   line-height: 1.6;
 }
 
+/* ---- 阅读模式 ---- */
+.reader-view {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 40px 80px;
+  background: #fff;
+  min-height: 100%;
+}
+.reader-header { border-bottom: 2px solid var(--border); margin-bottom: 28px; padding-bottom: 16px; }
+.reader-header h1 { margin: 0 0 6px; font-size: 26px; }
+.reader-theme { color: var(--muted); font-size: 13px; }
+.reader-node {
+  padding: 18px 14px;
+  border-left: 3px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.reader-node:hover { background: #f8fafc; }
+.reader-node.selected {
+  background: #eef2ff;
+  border-left-color: var(--accent);
+}
+.reader-node-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.reader-h { margin: 0; }
+.reader-h.h1 { font-size: 20px; }
+.reader-h.h2 { font-size: 17px; }
+.reader-h.h3 { font-size: 15px; }
+.reader-h.h4 { font-size: 14px; color: #475569; }
+.reader-summary { color: #475569; line-height: 1.8; margin: 8px 0 0; font-size: 13.5px; }
+.reader-formula-card {
+  background: #fbfcff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 10px;
+}
+.reader-end { text-align: center; color: #cbd5e1; margin-top: 40px; font-size: 13px; }
+.canvas .reader-view { width: 100%; }
+
