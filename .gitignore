@@ -6,3 +6,5 @@ npm-debug.log*
 # Playwright 截图与临时产物
 shots/
 *.png
+# electron-builder 产物
+release/

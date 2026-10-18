@@ -13,6 +13,16 @@
 
 ## 运行
 
+### 方式一:桌面软件(推荐,双击即用)
+
+打包产物在 `release/`:
+- `Layerview Setup 0.1.0.exe` — 安装版(开始菜单/桌面快捷方式)
+- `Layerview-Portable-0.1.0.exe` — 便携版(免安装,解压即用)
+
+重新打包:`npm run electron:dist`(需先 `npm install`,国内网络需配 ELECTRON_MIRROR 镜像)。
+
+### 方式二:开发模式
+
 ```bash
 npm install
 npm run dev      # http://127.0.0.1:5173

@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "npm run build && electron .",
+    "electron:pack": "npm run build && electron-builder --win dir",
+    "electron:dist": "npm run build && electron-builder --win"
   },
   "dependencies": {
     "d3": "^7.9.0",
@@ -22,7 +25,53 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.5.0",
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3",
     "typescript": "~5.8.3",
     "vite": "^6.3.5"
-  }
+  },
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "com.layerview.app",
+    "productName": "Layerview",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Layerview"
+    },
+    "portable": {
+      "artifactName": "Layerview-Portable-${version}.exe"
+    },
+    "asar": true,
+    "electronDist": "node_modules/electron/dist"
+  },
+  "author": "layerview"
 }
