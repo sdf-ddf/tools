@@ -11,3 +11,5 @@ release/
 # Playwright 测试产物
 test-results/
 playwright-report/
+# Vite 缓存
+.vite/
