@@ -45,7 +45,9 @@ export default function App() {
   );
   const [packId, setPackId] = useState(() => saved?.packId ?? packs[0].id);
   const pack = packs.find((p) => p.id === packId) ?? packs[0];
-  const [selectedId, setSelectedId] = useState<string | null>(() => saved?.selectedId ?? pack.root.id);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => saved?.selectedId ?? pack.root.id
+  );
   const [expandedIds, setExpandedIds] = useState<Set<string>>(
     () => new Set(saved?.expandedIds.length ? saved.expandedIds : [pack.root.id])
   );
@@ -184,7 +186,14 @@ export default function App() {
           {searchResults.length > 0 && (
             <div className="search-results">
               {searchResults.slice(0, 10).map((n) => (
-                <button key={n.id} onClick={() => { handleJump(n.id); setSearchQ(""); setSearchResults([]); }}>
+                <button
+                  key={n.id}
+                  onClick={() => {
+                    handleJump(n.id);
+                    setSearchQ("");
+                    setSearchResults([]);
+                  }}
+                >
                   {n.name}
                 </button>
               ))}
@@ -203,8 +212,12 @@ export default function App() {
           </select>
         </label>
 
-        <button className="tool-btn" onClick={handleExport}>导出</button>
-        <button className="tool-btn" onClick={() => fileRef.current?.click()}>导入</button>
+        <button className="tool-btn" onClick={handleExport}>
+          导出
+        </button>
+        <button className="tool-btn" onClick={() => fileRef.current?.click()}>
+          导入
+        </button>
         <button className="tool-btn accent2" onClick={() => setShowExtract(true)}>
           ✨ 文档解析
         </button>
@@ -299,12 +312,7 @@ export default function App() {
         </section>
 
         <aside className="panel">
-          <NodePanel
-            pack={pack}
-            node={path[path.length - 1]}
-            path={path}
-            onJump={handleJump}
-          />
+          <NodePanel pack={pack} node={path[path.length - 1]} path={path} onJump={handleJump} />
         </aside>
       </main>
 

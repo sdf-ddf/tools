@@ -18,10 +18,17 @@ export function mockChatStream(req: ChatRequest, onDelta: (d: string) => void): 
   if (isExtract) {
     text = mockExtract(lastUser);
   } else if (isFollowup) {
-    text = "这是 mock 模式的追问回复。你问的是:\"" + realQuestion + "\"。接入真实 API 后,我会结合「" + nodeName + "」的上下文回答。(mock)";
+    text =
+      '这是 mock 模式的追问回复。你问的是:"' +
+      realQuestion +
+      '"。接入真实 API 后,我会结合「' +
+      nodeName +
+      "」的上下文回答。(mock)";
   } else if (isExplain) {
     text = [
-      "1. **是什么**:" + nodeName + " 是本分层结构中的一个关键模块,负责承上启下的信息变换。(mock 演示)",
+      "1. **是什么**:" +
+        nodeName +
+        " 是本分层结构中的一个关键模块,负责承上启下的信息变换。(mock 演示)",
       "",
       "2. **为什么**:没有它,信息就无法从上层流入下一层,整体流程会断链;它把上层输出整理成下层可用的形式。(mock 演示)",
       "",
@@ -40,7 +47,12 @@ export function mockChatStream(req: ChatRequest, onDelta: (d: string) => void): 
       "子模块:承接上层输出,细化处理逻辑。(mock)",
     ].join("\n");
   } else {
-    text = "这是 mock 模式的追问回复。你问的是:\"" + realQuestion + "\"。接入真实 API 后,我会结合「" + nodeName + "」的上下文回答。(mock)";
+    text =
+      '这是 mock 模式的追问回复。你问的是:"' +
+      realQuestion +
+      '"。接入真实 API 后,我会结合「' +
+      nodeName +
+      "」的上下文回答。(mock)";
   }
 
   const chunks = text.match(/[\s\S]{1,12}/g) ?? [text];
@@ -70,7 +82,13 @@ function mockExtract(prompt: string): string {
     summary: string;
     children?: MockNode[];
   }
-  const root: MockNode = { id: "m.root", name: "文档解析结果", type: "model", summary: "mock 抽取", children: [] };
+  const root: MockNode = {
+    id: "m.root",
+    name: "文档解析结果",
+    type: "model",
+    summary: "mock 抽取",
+    children: [],
+  };
   let idSeq = 0;
   let h1: MockNode | null = null;
   let h2: MockNode | null = null;
@@ -82,21 +100,43 @@ function mockExtract(prompt: string): string {
     const h2m = line.match(/^##\s+(.+)$/);
     const h3m = line.match(/^###\s+(.+)$/);
     if (h1m) {
-      h1 = { id: "m.h1." + idSeq++, name: h1m[1].slice(0, 16), type: "layer", summary: "章节", children: [] };
+      h1 = {
+        id: "m.h1." + idSeq++,
+        name: h1m[1].slice(0, 16),
+        type: "layer",
+        summary: "章节",
+        children: [],
+      };
       h2 = null;
       root.children!.push(h1);
     } else if (h2m && h1) {
-      h2 = { id: "m.h2." + idSeq++, name: h2m[1].slice(0, 16), type: "concept", summary: "小节", children: [] };
+      h2 = {
+        id: "m.h2." + idSeq++,
+        name: h2m[1].slice(0, 16),
+        type: "concept",
+        summary: "小节",
+        children: [],
+      };
       h1.children!.push(h2);
     } else if (h3m) {
-      const h3: MockNode = { id: "m.h3." + idSeq++, name: h3m[1].slice(0, 16), type: "step", summary: "要点" };
+      const h3: MockNode = {
+        id: "m.h3." + idSeq++,
+        name: h3m[1].slice(0, 16),
+        type: "step",
+        summary: "要点",
+      };
       (h2 ? h2.children! : root.children!).push(h3);
     } else if (!firstText) {
       firstText = line;
     }
   }
   if (root.children!.length === 0) {
-    root.children!.push({ id: "m.leaf.0", name: "正文内容", type: "concept", summary: (firstText || doc).slice(0, 50) });
+    root.children!.push({
+      id: "m.leaf.0",
+      name: "正文内容",
+      type: "concept",
+      summary: (firstText || doc).slice(0, 50),
+    });
   } else if (firstText && root.children![0]) {
     root.children![0].summary = firstText.slice(0, 50);
   }

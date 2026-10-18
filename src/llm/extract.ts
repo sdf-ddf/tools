@@ -14,7 +14,10 @@ export async function collectText(
   opts?: { jsonObject?: boolean }
 ): Promise<string> {
   let text = "";
-  await streamChat({ settings, messages, jsonObject: opts?.jsonObject }, { onDelta: (d) => (text += d) });
+  await streamChat(
+    { settings, messages, jsonObject: opts?.jsonObject },
+    { onDelta: (d) => (text += d) }
+  );
   return text;
 }
 
@@ -104,14 +107,20 @@ export function dedupeIds(pack: unknown): void {
   if (!root || typeof root !== "object") return;
   const seen = new Set<string>();
   const ensure = (id: unknown, fallback: string): string => {
-    let base = typeof id === "string" && id.trim() ? id.trim() : fallback;
+    const base = typeof id === "string" && id.trim() ? id.trim() : fallback;
     let candidate = base;
     let n = 2;
-    while (seen.has(candidate)) { candidate = base + "-" + n; n++; }
+    while (seen.has(candidate)) {
+      candidate = base + "-" + n;
+      n++;
+    }
     seen.add(candidate);
     return candidate;
   };
-  const walk = (node: { id?: unknown; children?: unknown[]; [k: string]: unknown }, fallback: string) => {
+  const walk = (
+    node: { id?: unknown; children?: unknown[]; [k: string]: unknown },
+    fallback: string
+  ) => {
     node.id = ensure(node.id, fallback);
     for (const child of node.children ?? []) {
       if (child && typeof child === "object") walk(child as typeof node, String(node.id) + ".n");
@@ -157,7 +166,12 @@ function autoRepairPack(pack: unknown): void {
       };
       collect(root);
       p.edges = (p.edges as Record<string, unknown>[]).filter(
-        (e) => e && typeof e.from === "string" && typeof e.to === "string" && ids.has(e.from) && ids.has(e.to)
+        (e) =>
+          e &&
+          typeof e.from === "string" &&
+          typeof e.to === "string" &&
+          ids.has(e.from) &&
+          ids.has(e.to)
       );
     }
   }
@@ -170,8 +184,13 @@ function trimDepth(root: unknown, maxDepth: number): void {
     const kids = n.children as Record<string, unknown>[] | undefined;
     if (!kids || kids.length === 0) return;
     if (depth >= maxDepth) {
-      const names = kids.map((k) => String(k.name ?? "")).filter(Boolean).join("、");
-      if (names) n.summary = (typeof n.summary === "string" && n.summary ? n.summary + " " : "") + "涵盖:" + names;
+      const names = kids
+        .map((k) => String(k.name ?? ""))
+        .filter(Boolean)
+        .join("、");
+      if (names)
+        n.summary =
+          (typeof n.summary === "string" && n.summary ? n.summary + " " : "") + "涵盖:" + names;
       delete n.children;
       return;
     }
@@ -187,7 +206,10 @@ function trimNodesPerLevel(root: unknown, maxNodes: number): void {
     if (kids && kids.length > maxNodes) {
       const keep = kids.slice(0, maxNodes);
       const rest = kids.slice(maxNodes);
-      const restNames = rest.map((k) => String(k.name ?? "")).filter(Boolean).join("、");
+      const restNames = rest
+        .map((k) => String(k.name ?? ""))
+        .filter(Boolean)
+        .join("、");
       keep.push({
         id: String(n.id) + ".more",
         name: "其他 " + rest.length + " 项",
@@ -201,28 +223,37 @@ function trimNodesPerLevel(root: unknown, maxNodes: number): void {
   walk(root as Record<string, unknown>);
 }
 
-const EXAMPLE_JSON = JSON.stringify({
-  id: "lidar-abll",
-  title: "激光雷达反演边界层",
-  theme: "大气遥感",
-  root: {
-    id: "lidar-abll.root",
-    name: "激光雷达反演边界层",
-    type: "model",
-    summary: "一句话说明",
-    children: [
-      {
-        id: "lidar-abll.method",
-        name: "方法",
-        type: "layer",
-        summary: "小波协方差变换反演",
-        children: [
-          { id: "lidar-abll.method.wct", name: "小波协方差变换 WCT", type: "step", summary: "协方差最大处对应边界层顶" },
-        ],
-      },
-    ],
+const EXAMPLE_JSON = JSON.stringify(
+  {
+    id: "lidar-abll",
+    title: "激光雷达反演边界层",
+    theme: "大气遥感",
+    root: {
+      id: "lidar-abll.root",
+      name: "激光雷达反演边界层",
+      type: "model",
+      summary: "一句话说明",
+      children: [
+        {
+          id: "lidar-abll.method",
+          name: "方法",
+          type: "layer",
+          summary: "小波协方差变换反演",
+          children: [
+            {
+              id: "lidar-abll.method.wct",
+              name: "小波协方差变换 WCT",
+              type: "step",
+              summary: "协方差最大处对应边界层顶",
+            },
+          ],
+        },
+      ],
+    },
   },
-}, null, 2);
+  null,
+  2
+);
 
 /** Follow-the-Format 提示词:完整示例(StructuredRAG 结论:完整示例优于模板填空) */
 const SYSTEM_PROMPT = [
@@ -248,7 +279,7 @@ export async function extractChunk(
   opts?: { onRepair?: (round: number, errors: string[]) => void }
 ): Promise<unknown> {
   const userMsg = "请解析以下文档片段为分层 JSON:\n\n" + chunk.slice(0, CHUNK_CHARS);
-  let text = await collectText(
+  const text = await collectText(
     settings,
     [
       { role: "system", content: SYSTEM_PROMPT },
@@ -278,7 +309,10 @@ export async function extractChunk(
     if (check.ok) break;
     const errSummary = check.errors.slice(0, 6).join("; ");
     opts?.onRepair?.(round, check.errors);
-    const fixMsg = "你刚才输出的 JSON 有这些问题:" + errSummary + "。请修复这些问题后重新输出完整 JSON(仍然只输出一个 JSON 对象,格式与示例一致)。";
+    const fixMsg =
+      "你刚才输出的 JSON 有这些问题:" +
+      errSummary +
+      "。请修复这些问题后重新输出完整 JSON(仍然只输出一个 JSON 对象,格式与示例一致)。";
     const fixed = await collectText(
       settings,
       [
@@ -308,14 +342,19 @@ export async function extractDocument(
     if (chunks.length === 1) {
       opts?.onProgress?.({ chunk: 1, totalChunks: 1, phase: "抽取" });
       const parsed = await extractChunk(settings, chunks[0]);
-      if (!parsed) return { ok: false, error: "抽取失败:LLM 输出无法解析为 JSON(已重试+jsonrepair)" };
+      if (!parsed)
+        return { ok: false, error: "抽取失败:LLM 输出无法解析为 JSON(已重试+jsonrepair)" };
       finalizePack(parsed, maxDepth, maxNodes);
       return { ok: true, packJson: JSON.stringify(parsed, null, 2) };
     }
 
     const parts: { title: string; level: number; node: unknown }[] = [];
     for (let i = 0; i < chunks.length; i++) {
-      opts?.onProgress?.({ chunk: i + 1, totalChunks: chunks.length, phase: "抽取块 " + (i + 1) + "/" + chunks.length });
+      opts?.onProgress?.({
+        chunk: i + 1,
+        totalChunks: chunks.length,
+        phase: "抽取块 " + (i + 1) + "/" + chunks.length,
+      });
       const parsed = await extractChunk(settings, chunks[i]);
       if (!parsed) return { ok: false, error: "第 " + (i + 1) + " 块抽取失败" };
       const firstLine = chunks[i].split("\n")[0]?.trim() ?? "";
@@ -350,7 +389,12 @@ function buildHierarchy(parts: { title: string; level: number; node: unknown }[]
     const inner = part.node as Record<string, unknown>;
     const innerRoot = (inner.root ?? inner) as Record<string, unknown>;
     return {
-      id: "sec." + part.title.replace(/[^a-zA-Z0-9-]+/g, "-").slice(0, 24).toLowerCase(),
+      id:
+        "sec." +
+        part.title
+          .replace(/[^a-zA-Z0-9-]+/g, "-")
+          .slice(0, 24)
+          .toLowerCase(),
       name: part.title,
       type: "layer",
       summary: typeof innerRoot?.summary === "string" ? innerRoot.summary.slice(0, 50) : "",

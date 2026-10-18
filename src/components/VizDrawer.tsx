@@ -42,7 +42,12 @@ function findAncestorWithViz(pack: ContentPack, node: LayerNode): LayerNode | nu
 }
 
 export function VizDrawer({ pack, node, onClose, onJump }: VizDrawerProps) {
-  const [pinned, setPinned] = useState<{ id: string; name: string; data: VizData; title?: string } | null>(null);
+  const [pinned, setPinned] = useState<{
+    id: string;
+    name: string;
+    data: VizData;
+    title?: string;
+  } | null>(null);
   if (!node) return null;
   const resolved = resolveData(pack, node);
   const ancestor = resolved ? null : findAncestorWithViz(pack, node);
@@ -55,7 +60,14 @@ export function VizDrawer({ pack, node, onClose, onJump }: VizDrawerProps) {
           {resolved && (
             <button
               className="viz-pin-btn"
-              onClick={() => setPinned({ id: node.id, name: node.name, data: resolved.data, title: resolved.title })}
+              onClick={() =>
+                setPinned({
+                  id: node.id,
+                  name: node.name,
+                  data: resolved.data,
+                  title: resolved.title,
+                })
+              }
               title="固定当前图,点别的节点可并排对比"
             >
               📌 固定对比
@@ -66,7 +78,9 @@ export function VizDrawer({ pack, node, onClose, onJump }: VizDrawerProps) {
               解除固定
             </button>
           )}
-          <button className="viz-close" onClick={onClose}>✕</button>
+          <button className="viz-close" onClick={onClose}>
+            ✕
+          </button>
         </div>
       </div>
       <div className="viz-drawer-body">

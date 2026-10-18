@@ -108,11 +108,13 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
   function handleExplain() {
     const settings = loadSettings();
     const userMsg = explainPrompt(ctx);
-    const sys = settings.provider === "mock"
-      ? "你是讲解助手"
-      : "你是 Layerview 分层透视镜的讲解助手。";
+    const sys =
+      settings.provider === "mock" ? "你是讲解助手" : "你是 Layerview 分层透视镜的讲解助手。";
     runStream(
-      [{ role: "system", content: sys }, { role: "user", content: userMsg }],
+      [
+        { role: "system", content: sys },
+        { role: "user", content: userMsg },
+      ],
       { role: "assistant", content: "", streaming: true }
     );
   }
@@ -137,12 +139,14 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
     }
     const settings = loadSettings();
     const userMsg = followupPrompt(ctx, history, q);
-    const sys = settings.provider === "mock"
-      ? "你是讲解助手"
-      : "你是 Layerview 分层透视镜的讲解助手。";
+    const sys =
+      settings.provider === "mock" ? "你是讲解助手" : "你是 Layerview 分层透视镜的讲解助手。";
     setQuestion("");
     runStream(
-      [{ role: "system", content: sys }, { role: "user", content: userMsg }],
+      [
+        { role: "system", content: sys },
+        { role: "user", content: userMsg },
+      ],
       { role: "assistant", content: "", streaming: true }
     );
   }

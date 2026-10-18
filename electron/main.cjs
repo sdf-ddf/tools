@@ -5,7 +5,6 @@ const http = require("node:http");
 const { readFile, stat } = require("node:fs/promises");
 const path = require("node:path");
 
-const IS_DEV = !app.isPackaged;
 const PORT = 45173; // 固定端口,仅回环监听
 
 // 单实例锁:防双开导致端口冲突

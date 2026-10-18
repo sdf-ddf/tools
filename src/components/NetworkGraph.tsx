@@ -81,16 +81,21 @@ export function NetworkGraph({ pack, selectedId, onSelect }: NetworkGraphProps) 
 
     const sim = d3
       .forceSimulation<GraphNode>(nodes)
-      .force("link", d3.forceLink<GraphNode, GraphLink>(links).id((d) => d.id).distance(150))
+      .force(
+        "link",
+        d3
+          .forceLink<GraphNode, GraphLink>(links)
+          .id((d) => d.id)
+          .distance(150)
+      )
       .force("charge", d3.forceManyBody().strength(-320))
       .force("center", d3.forceCenter(size.width / 2, size.height / 2))
-      .force("collide", d3.forceCollide<GraphNode>().radius((d) => d.w / 2 + 28));
+      .force(
+        "collide",
+        d3.forceCollide<GraphNode>().radius((d) => d.w / 2 + 28)
+      );
 
-    const link = svg
-      .append("g")
-      .selectAll("g")
-      .data(links)
-      .join("g");
+    const link = svg.append("g").selectAll("g").data(links).join("g");
 
     link
       .append("line")
@@ -144,14 +149,13 @@ export function NetworkGraph({ pack, selectedId, onSelect }: NetworkGraphProps) 
       .attr("fill", "#64748b")
       .text((d) => d.id);
 
-    node
-      .append("title")
-      .text((d) => d.summary ?? d.name);
+    node.append("title").text((d) => d.summary ?? d.name);
 
     node.on("click", (_ev, d) => onSelect(d.id));
 
     node.call(
-      d3.drag<SVGGElement, GraphNode, SVGGElement>()
+      d3
+        .drag<SVGGElement, GraphNode, SVGGElement>()
         .on("start", (event, d) => {
           if (!event.active) sim.alphaTarget(0.3).restart();
           d.fx = d.x;
@@ -178,7 +182,13 @@ export function NetworkGraph({ pack, selectedId, onSelect }: NetworkGraphProps) 
       link
         .select("text")
         .attr("x", (d) => (((d.source as GraphNode).x ?? 0) + ((d.target as GraphNode).x ?? 0)) / 2)
-        .attr("y", (d) => ((((d.source as GraphNode).y ?? 0) + ((d.target as GraphNode).y ?? 0)) / 2) + CARD_H / 2 - 6);
+        .attr(
+          "y",
+          (d) =>
+            (((d.source as GraphNode).y ?? 0) + ((d.target as GraphNode).y ?? 0)) / 2 +
+            CARD_H / 2 -
+            6
+        );
       node.attr("transform", (d) => `translate(${(d.x ?? 0) - d.w / 2},${d.y ?? 0})`);
     });
 
@@ -191,7 +201,5 @@ export function NetworkGraph({ pack, selectedId, onSelect }: NetworkGraphProps) 
     };
   }, [nodes, links, selectedId, onSelect, size]);
 
-  return (
-    <svg ref={svgRef} width={size.width} height={size.height} className="layer-tree-svg" />
-  );
+  return <svg ref={svgRef} width={size.width} height={size.height} className="layer-tree-svg" />;
 }

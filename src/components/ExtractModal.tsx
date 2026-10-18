@@ -139,7 +139,9 @@ export function ExtractModal({ onDone, onClose }: ExtractModalProps) {
                   层级深度
                   <select value={maxDepth} onChange={(e) => setMaxDepth(Number(e.target.value))}>
                     {[2, 3, 4, 5].map((d) => (
-                      <option key={d} value={d}>{d} 层</option>
+                      <option key={d} value={d}>
+                        {d} 层
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -147,7 +149,9 @@ export function ExtractModal({ onDone, onClose }: ExtractModalProps) {
                   每层节点上限
                   <select value={maxNodes} onChange={(e) => setMaxNodes(Number(e.target.value))}>
                     {[6, 10, 12, 16, 20].map((n) => (
-                      <option key={n} value={n}>{n} 个</option>
+                      <option key={n} value={n}>
+                        {n} 个
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -155,7 +159,8 @@ export function ExtractModal({ onDone, onClose }: ExtractModalProps) {
             )}
             {pdfInfo && phase === "pdfPreview" && (
               <div className="extract-preview-hint">
-                PDF 已提取 {pdfInfo.pages} 页 / {pdfInfo.chars} 字符。下方是提取出的文本(可编辑),确认后点「开始解析」。
+                PDF 已提取 {pdfInfo.pages} 页 / {pdfInfo.chars}{" "}
+                字符。下方是提取出的文本(可编辑),确认后点「开始解析」。
               </div>
             )}
             <textarea
@@ -203,7 +208,9 @@ export function ExtractModal({ onDone, onClose }: ExtractModalProps) {
               <button className="action-btn primary" onClick={handleExtract}>
                 开始解析
               </button>
-              <button className="action-btn" onClick={onClose}>取消</button>
+              <button className="action-btn" onClick={onClose}>
+                取消
+              </button>
             </>
           )}
           {(phase === "extracting" || phase === "pdfExtracting") && (
@@ -216,10 +223,18 @@ export function ExtractModal({ onDone, onClose }: ExtractModalProps) {
               <button className="action-btn primary" onClick={handleSave}>
                 保存为内容包
               </button>
-              <button className="action-btn" onClick={() => { setPhase(pdfInfo ? "pdfPreview" : "input"); setPackJson(""); }}>
+              <button
+                className="action-btn"
+                onClick={() => {
+                  setPhase(pdfInfo ? "pdfPreview" : "input");
+                  setPackJson("");
+                }}
+              >
                 重新解析
               </button>
-              <button className="action-btn" onClick={onClose}>取消</button>
+              <button className="action-btn" onClick={onClose}>
+                取消
+              </button>
             </>
           )}
         </div>

@@ -17,7 +17,10 @@ export async function streamChat(req: ChatRequest, cb: ChatStreamCallbacks): Pro
 
   // 组合外部 signal 与内部超时
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(new Error("请求超时(120 秒),请检查网络或稍后重试")), REQUEST_TIMEOUT_MS);
+  const timer = setTimeout(
+    () => controller.abort(new Error("请求超时(120 秒),请检查网络或稍后重试")),
+    REQUEST_TIMEOUT_MS
+  );
   const onExternalAbort = () => controller.abort(new Error("已取消"));
   cb.signal?.addEventListener("abort", onExternalAbort);
 

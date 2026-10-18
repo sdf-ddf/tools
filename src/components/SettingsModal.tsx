@@ -31,7 +31,10 @@ export function SettingsModal({ current, onSave, onClose }: SettingsModalProps) 
 
         <label className="field">
           <span>服务提供方</span>
-          <select value={s.provider} onChange={(e) => set("provider", e.target.value as ProviderKind)}>
+          <select
+            value={s.provider}
+            onChange={(e) => set("provider", e.target.value as ProviderKind)}
+          >
             {PROVIDERS.map((p) => (
               <option key={p.kind} value={p.kind}>
                 {p.label}

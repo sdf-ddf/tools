@@ -6,10 +6,10 @@
 ## 1. 快速开始
 
 \`\`\`bash  
-npm install          # 首次  
-npm run dev          # <http://127.0.0.1:5173>  
-npm run build        # tsc --noEmit && vite build(提交前必跑)  
-npx tsc --noEmit     # 只查类型  
+npm install # 首次  
+npm run dev # <http://127.0.0.1:5173>  
+npm run build # tsc --noEmit && vite build(提交前必跑)  
+npx tsc --noEmit # 只查类型  
 \`\`\`
 
 - 端口被占用: \`Get-NetTCPConnection -LocalPort 5173 -State Listen\` 找到 PID 后 kill。
@@ -25,12 +25,12 @@ npx tsc --noEmit     # 只查类型
 ├─ NetworkGraph(力导向网络 + 边箭头)  
 ├─ SideNav(左侧导航)  
 ├─ NodePanel(讲解面板)  
-│    → llm/prompts(四段式/下钻/追问模板)  
-│    → llm/client(流式 SSE 解析)  
-│    → /api/llm/chat(vite.config.ts 本地代理)  
-│    → DeepSeek / OpenAI 兼容 / Ollama / mock  
+│ → llm/prompts(四段式/下钻/追问模板)  
+│ → llm/client(流式 SSE 解析)  
+│ → /api/llm/chat(vite.config.ts 本地代理)  
+│ → DeepSeek / OpenAI 兼容 / Ollama / mock  
 ├─ VizDrawer(底部数值调试台)  
-│    → viz/VizRenderer(热力图/矩阵/直方图/折线/散点)  
+│ → viz/VizRenderer(热力图/矩阵/直方图/折线/散点)  
 └─ ExtractModal(文档解析)  
 → pdf/extractPdf(pdfjs-dist,浏览器端)  
 → llm/extract(分块 + json_object 抽取 + 修复重试)  
@@ -39,17 +39,17 @@ npx tsc --noEmit     # 只查类型
 
 ## 3. 关键文件
 
-| 文件                    | 职责                                                         |
-| --------------------- | ---------------------------------------------------------- |
-| src/types.ts          | 核心数据模型 ContentPack/LayerNode/VizData(一切扩展从这里开始)            |
-| src/validate.ts       | 内容包校验(导入/保存前必过)                                            |
-| src/data/*.json       | 内置内容包(可直接手写新包)                                             |
-| src/data/packs.ts     | 内置包注册 + DEV 自检                                             |
-| src/llm/              | types/settings(存 localStorage)/prompts/client/mock/extract |
-| src/pdf/extractPdf.ts | PDF 文本提取(阅读顺序重建 + 扫描件检测)                                   |
-| vite.config.ts        | Vite 配置 + /api/llm/chat 流式代理                               |
-| scripts/*.py          | Playwright 回归(系统 Python 3.13 有 playwright)                 |
-| docs/research/        | M4 调研报告(DeepSeek 能力实测 + PDF 工具链选型)                         |
+| 文件                  | 职责                                                           |
+| --------------------- | -------------------------------------------------------------- |
+| src/types.ts          | 核心数据模型 ContentPack/LayerNode/VizData(一切扩展从这里开始) |
+| src/validate.ts       | 内容包校验(导入/保存前必过)                                    |
+| src/data/*.json       | 内置内容包(可直接手写新包)                                     |
+| src/data/packs.ts     | 内置包注册 + DEV 自检                                          |
+| src/llm/              | types/settings(存 localStorage)/prompts/client/mock/extract    |
+| src/pdf/extractPdf.ts | PDF 文本提取(阅读顺序重建 + 扫描件检测)                        |
+| vite.config.ts        | Vite 配置 + /api/llm/chat 流式代理                             |
+| scripts/*.py          | Playwright 回归(系统 Python 3.13 有 playwright)                |
+| docs/research/        | M4 调研报告(DeepSeek 能力实测 + PDF 工具链选型)                |
 
 ## 4. 最常见的 5 个扩展
 
@@ -101,8 +101,8 @@ FastAPI + PyMuPDF get_toc()(注意 AGPL)→ 前端 fetch。详见 docs/research/
 ## 5.5 桌面打包(Electron)
 
 \`\`\`bash
-npm run electron:dist   # 打包 NSIS 安装包 + 便携版 → release/
-npm run electron:pack   # 只打 dir 模式(调试用)
+npm run electron:dist # 打包 NSIS 安装包 + 便携版 → release/
+npm run electron:pack # 只打 dir 模式(调试用)
 \`\`\`
 
 - **打包前必须 \`npm run build\`**(前端产物进 asar)。
@@ -120,10 +120,10 @@ npm run electron:pack   # 只打 dir 模式(调试用)
 ## 6. 测试
 
 \`\`\`bash  
-$env:PYTHONUTF8="1"            # PowerShell 必须,否则中文乱码  
-python scripts/m3_regression.py   # 数值可视化  
-python scripts/m4_e2e.py          # 文档解析(mock 离线)  
-python scripts/pdf_regression.py  # PDF(reportlab 生成的测试 PDF 在 shots/)  
+$env:PYTHONUTF8="1" # PowerShell 必须,否则中文乱码  
+python scripts/m3_regression.py # 数值可视化  
+python scripts/m4_e2e.py # 文档解析(mock 离线)  
+python scripts/pdf_regression.py # PDF(reportlab 生成的测试 PDF 在 shots/)  
 \`\`\`
 
 - 真实 API 测试(需 Key,从环境变量读取,不入库):  

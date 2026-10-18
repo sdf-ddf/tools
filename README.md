@@ -16,6 +16,7 @@
 ### 方式一:桌面软件(推荐,双击即用)
 
 打包产物在 `release/`:
+
 - `Layerview Setup 0.1.0.exe` — 安装版(开始菜单/桌面快捷方式)
 - `Layerview-Portable-0.1.0.exe` — 便携版(免安装,解压即用)
 
@@ -31,12 +32,12 @@ npm run build    # 类型检查 + 产物构建
 
 ## 配置大模型(右上角「模型」按钮)
 
-| Provider | 说明 |
-|---|---|
-| DeepSeek | 填 API Key(只存浏览器 localStorage),模型 deepseek-flash(推荐)/ deepseek-v4-pro(实测本账号可用模型) |
-| OpenAI 兼容 | 任意 OpenAI 兼容服务,填 Key + baseUrl + 模型名 |
-| Ollama | 本地模型,填 Ollama 地址(默认 http://127.0.0.1:11434) |
-| Mock | 无需 Key,离线演示流式讲解(回归测试用) |
+| Provider    | 说明                                                                                               |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| DeepSeek    | 填 API Key(只存浏览器 localStorage),模型 deepseek-flash(推荐)/ deepseek-v4-pro(实测本账号可用模型) |
+| OpenAI 兼容 | 任意 OpenAI 兼容服务,填 Key + baseUrl + 模型名                                                     |
+| Ollama      | 本地模型,填 Ollama 地址(默认 http://127.0.0.1:11434)                                               |
+| Mock        | 无需 Key,离线演示流式讲解(回归测试用)                                                              |
 
 请求经 Vite 本地代理 `/api/llm/chat` 转发(见 vite.config.ts),API Key 不出本机。
 
@@ -45,6 +46,17 @@ npm run build    # 类型检查 + 产物构建
 - `src/types.ts` —— 通用分层数据模型(ContentPack / LayerNode / Edge)
 - `src/data/` —— 内容包(Transformer 架构、卫星遥感数据分级)
 - `src/components/` —— D3 分层树、左侧导航、讲解面板、数值调试台(`viz/` 可视化组件库)
+
+## 开发命令
+
+```bash
+npm run build        # tsc 类型检查 + vite 构建
+npm test             # Vitest 单元测试(核心纯函数)
+npm run e2e:smoke    # Playwright 冒烟(mock 模式,无需 API Key)
+npx eslint src electron  # 代码检查
+```
+
+CI:推送到 GitHub 后自动跑 typecheck → build → unit → lint → e2e(.github/workflows/ci.yml)。
 
 ## 二次开发
 

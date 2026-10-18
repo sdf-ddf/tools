@@ -11,9 +11,8 @@ interface VisibleNode extends LayerNode {
 
 function buildVisible(node: LayerNode, expanded: Set<string>): VisibleNode {
   const has = (node.children?.length ?? 0) > 0;
-  const children = has && expanded.has(node.id)
-    ? node.children!.map((c) => buildVisible(c, expanded))
-    : undefined;
+  const children =
+    has && expanded.has(node.id) ? node.children!.map((c) => buildVisible(c, expanded)) : undefined;
   return { ...node, __hasChildren: has, children };
 }
 
@@ -45,13 +44,18 @@ function placeTree(root: VisibleNode): TreeLayout {
   const links: { s: PlacedNode; t: PlacedNode }[] = [];
   let leafY = 0;
 
-  function walkY(n: VisibleNode, parent?: PlacedNode, depth = 0): { first: PlacedNode; last: PlacedNode } {
+  function walkY(
+    n: VisibleNode,
+    parent?: PlacedNode,
+    depth = 0
+  ): { first: PlacedNode; last: PlacedNode } {
     const p: PlacedNode = { node: n, x: 0, y: 0, w: measure(n), depth, parent };
     placed.push(p);
     if (parent) links.push({ s: parent, t: p });
     const kids = n.children;
     if (kids && kids.length > 0) {
-      let first: PlacedNode | null = null, last: PlacedNode | null = null;
+      let first: PlacedNode | null = null,
+        last: PlacedNode | null = null;
       for (const c of kids) {
         const r = walkY(c, p, depth + 1);
         if (!first) first = r.first;
@@ -102,7 +106,10 @@ interface LayerTreeProps {
 
 export function LayerTree({ pack, expandedIds, selectedId, onSelect, onToggle }: LayerTreeProps) {
   const gRef = useRef<SVGGElement>(null);
-  const layout = useMemo(() => placeTree(buildVisible(pack.root, expandedIds)), [pack, expandedIds]);
+  const layout = useMemo(
+    () => placeTree(buildVisible(pack.root, expandedIds)),
+    [pack, expandedIds]
+  );
 
   useEffect(() => {
     const g = d3.select(gRef.current!);
@@ -116,8 +123,10 @@ export function LayerTree({ pack, expandedIds, selectedId, onSelect, onToggle }:
       .attr("stroke", "#cbd5e1")
       .attr("stroke-width", 1.6)
       .attr("d", (l) => {
-        const x0 = l.s.x + l.s.w, y0 = l.s.y + CARD_H / 2;
-        const x1 = l.t.x, y1 = l.t.y + CARD_H / 2;
+        const x0 = l.s.x + l.s.w,
+          y0 = l.s.y + CARD_H / 2;
+        const x1 = l.t.x,
+          y1 = l.t.y + CARD_H / 2;
         return `M${x0},${y0}C${x0 + 30},${y0} ${x1 - 30},${y1} ${x1},${y1}`;
       });
 
@@ -147,9 +156,7 @@ export function LayerTree({ pack, expandedIds, selectedId, onSelect, onToggle }:
       .attr("rx", 2.5)
       .attr("fill", (d) => TYPE_COLORS[d.node.type]);
 
-    node
-      .append("title")
-      .text((d) => d.node.summary ?? d.node.name);
+    node.append("title").text((d) => d.node.summary ?? d.node.name);
 
     node
       .append("text")

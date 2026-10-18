@@ -58,7 +58,11 @@ ${flatten(ctx.node)}
 }
 
 /** 追问:携带当前节点上下文 */
-export function followupPrompt(ctx: NodeContext, history: { role: string; content: string }[], question: string): string {
+export function followupPrompt(
+  ctx: NodeContext,
+  history: { role: string; content: string }[],
+  question: string
+): string {
   const node = ctx.node;
   return `你是"Layerview 分层透视镜"的讲解助手。当前焦点节点:「${node.name}」(${node.type}),位于「${ctx.packTitle}」主题下。
 
