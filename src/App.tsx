@@ -1,12 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { LayerTree } from "./components/LayerTree";
 import { SideNav } from "./components/SideNav";
 import { NodePanel } from "./components/NodePanel";
-import { transformerPack } from "./data/transformerPack";
-import { remoteSensingPack } from "./data/remoteSensingPack";
-import type { LayerNode } from "./types";
-
-const PACKS = [transformerPack, remoteSensingPack];
+import { NetworkGraph } from "./components/NetworkGraph";
+import { BUILTIN_PACKS } from "./data/packs";
+import type { ContentPack, LayerNode } from "./types";
+import { validatePack } from "./validate";
 
 function findPath(root: LayerNode, target: string): LayerNode[] | null {
   if (root.id === target) return [root];
@@ -23,11 +22,27 @@ function collectIds(node: LayerNode, acc: string[] = []): string[] {
   return acc;
 }
 
+function searchNodes(node: LayerNode, q: string, acc: LayerNode[] = []): LayerNode[] {
+  if (node.name.toLowerCase().includes(q) || (node.summary ?? "").toLowerCase().includes(q)) {
+    acc.push(node);
+  }
+  node.children?.forEach((c) => searchNodes(c, q, acc));
+  return acc;
+}
+
+type ViewMode = "tree" | "network";
+
 export default function App() {
-  const [packId, setPackId] = useState(PACKS[0].id);
-  const pack = PACKS.find((p) => p.id === packId)!;
+  const [packs, setPacks] = useState<ContentPack[]>(BUILTIN_PACKS);
+  const [packId, setPackId] = useState(packs[0].id);
+  const pack = packs.find((p) => p.id === packId) ?? packs[0];
   const [selectedId, setSelectedId] = useState<string | null>(pack.root.id);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set([pack.root.id]));
+  const [viewMode, setViewMode] = useState<ViewMode>("tree");
+  const [searchQ, setSearchQ] = useState("");
+  const [searchResults, setSearchResults] = useState<LayerNode[]>([]);
+  const [importMsg, setImportMsg] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const totalNodes = useMemo(() => collectIds(pack.root).length, [pack]);
 
@@ -62,9 +77,50 @@ export default function App() {
 
   function handlePackChange(id: string) {
     setPackId(id);
-    const p = PACKS.find((x) => x.id === id)!;
+    const p = packs.find((x) => x.id === id)!;
     setSelectedId(p.root.id);
     setExpandedIds(new Set([p.root.id]));
+  }
+
+  function handleSearch(q: string) {
+    setSearchQ(q);
+    setSearchResults(q.trim() ? searchNodes(pack.root, q.trim().toLowerCase()) : []);
+  }
+
+  function handleExport() {
+    const blob = new Blob([JSON.stringify(pack, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = pack.id + ".pack.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImportFile(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result));
+        const res = validatePack(parsed);
+        if (!res.ok) {
+          setImportMsg("校验失败:" + res.errors.slice(0, 3).join(";"));
+          return;
+        }
+        const p = parsed as ContentPack;
+        setPacks((prev) => {
+          const without = prev.filter((x) => x.id !== p.id);
+          return [...without, p];
+        });
+        setPackId(p.id);
+        setSelectedId(p.root.id);
+        setExpandedIds(new Set([p.root.id]));
+        setImportMsg(`已导入「${p.title}」`);
+      } catch {
+        setImportMsg("解析失败:不是合法 JSON 文件");
+      }
+    };
+    reader.readAsText(file);
   }
 
   return (
@@ -73,20 +129,74 @@ export default function App() {
         <div className="brand">
           <span className="logo">◈</span>
           <span className="brand-name">Layerview</span>
-          <span className="brand-sub">分层透视镜 · M0</span>
+          <span className="brand-sub">分层透视镜 · M1</span>
         </div>
+
+        <div className="view-switch">
+          <button
+            className={"view-btn" + (viewMode === "tree" ? " active" : "")}
+            onClick={() => setViewMode("tree")}
+          >
+            树形
+          </button>
+          <button
+            className={"view-btn" + (viewMode === "network" ? " active" : "")}
+            onClick={() => setViewMode("network")}
+          >
+            网络
+          </button>
+        </div>
+
+        <div className="search-box">
+          <input
+            type="text"
+            placeholder="搜索节点…"
+            value={searchQ}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+          {searchResults.length > 0 && (
+            <div className="search-results">
+              {searchResults.slice(0, 10).map((n) => (
+                <button key={n.id} onClick={() => { handleJump(n.id); setSearchQ(""); setSearchResults([]); }}>
+                  {n.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <label className="pack-switch">
           内容包
           <select value={packId} onChange={(e) => handlePackChange(e.target.value)}>
-            {PACKS.map((p) => (
+            {packs.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.title}
               </option>
             ))}
           </select>
         </label>
+
+        <button className="tool-btn" onClick={handleExport}>导出</button>
+        <button className="tool-btn" onClick={() => fileRef.current?.click()}>导入</button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".json"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleImportFile(f);
+            e.target.value = "";
+          }}
+        />
         <span className="theme-tag">{pack.theme}</span>
       </header>
+
+      {importMsg && (
+        <div className="import-toast" onClick={() => setImportMsg(null)}>
+          {importMsg}
+        </div>
+      )}
 
       <main className="workspace">
         <aside className="sidebar">
@@ -103,15 +213,21 @@ export default function App() {
 
         <section className="canvas">
           <div className="canvas-hint">
-            单击节点:选中并展开/折叠 · 悬停:查看摘要
+            {viewMode === "tree"
+              ? "单击节点:选中并展开/折叠 · 悬停:查看摘要"
+              : "拖拽节点调整位置 · 点击选中"}
           </div>
-          <LayerTree
-            pack={pack}
-            expandedIds={expandedIds}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onToggle={handleToggle}
-          />
+          {viewMode === "tree" ? (
+            <LayerTree
+              pack={pack}
+              expandedIds={expandedIds}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onToggle={handleToggle}
+            />
+          ) : (
+            <NetworkGraph pack={pack} selectedId={selectedId} onSelect={setSelectedId} />
+          )}
         </section>
 
         <aside className="panel">
@@ -133,7 +249,9 @@ export default function App() {
           </span>
         ))}
         <span className="stats">
-          展开 {expandedIds.size} / 共 {totalNodes} 节点
+          {viewMode === "tree"
+            ? `展开 ${expandedIds.size} / 共 ${totalNodes} 节点`
+            : `共 ${totalNodes} 节点 · ${pack.edges?.length ?? 0} 条边`}
         </span>
       </footer>
     </div>

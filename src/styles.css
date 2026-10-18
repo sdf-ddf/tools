@@ -205,3 +205,89 @@ body {
 .crumb.current:hover { text-decoration: none; color: var(--text); }
 .crumb-sep { color: #cbd5e1; }
 .stats { margin-left: auto; }
+
+/* ---- M1 新增:视图切换 / 搜索 / 工具按钮 / 导入提示 ---- */
+.view-switch {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-left: 18px;
+}
+.view-btn {
+  padding: 5px 14px;
+  border: none;
+  background: #fff;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.view-btn.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.search-box {
+  position: relative;
+  margin-left: 12px;
+}
+.search-box input {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  width: 170px;
+  outline: none;
+}
+.search-box input:focus { border-color: var(--accent); }
+.search-results {
+  position: absolute;
+  top: 34px;
+  left: 0;
+  min-width: 200px;
+  max-height: 300px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  z-index: 10;
+}
+.search-results button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 7px 12px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.search-results button:hover { background: #f1f5f9; }
+
+.tool-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.tool-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.import-toast {
+  position: fixed;
+  top: 62px;
+  right: 18px;
+  padding: 9px 16px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #065f46;
+  z-index: 20;
+  cursor: pointer;
+}
+
