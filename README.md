@@ -36,6 +36,10 @@ npm run build    # 类型检查 + 产物构建
 - `src/data/` —— 内容包(Transformer 架构、卫星遥感数据分级)
 - `src/components/` —— D3 分层树、左侧导航、讲解面板、数值调试台(`viz/` 可视化组件库)
 
+## 二次开发
+
+见 [DEVELOPING.md](./DEVELOPING.md):架构、扩展点、踩过的坑、测试方法。
+
 ## 路线图(见 PRD.md)
 
 M0 ✅ → M1 ✅ → M2 ✅ → M3 ✅ → M4 ✅ → PDF 解析 ✅(M5 遥感旗舰包按用户决定不做)
