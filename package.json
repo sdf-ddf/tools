@@ -10,7 +10,12 @@
     "preview": "vite preview",
     "electron:dev": "npm run build && electron .",
     "electron:pack": "npm run build && electron-builder --win dir",
-    "electron:dist": "npm run build && electron-builder --win"
+    "electron:dist": "npm run build && electron-builder --win",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src electron --fix=false || eslint src electron",
+    "format": "prettier --write .",
+    "e2e:smoke": "playwright test"
   },
   "dependencies": {
     "d3": "^7.9.0",
@@ -21,6 +26,8 @@
     "react-markdown": "^10.1.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
     "@types/d3": "^7.4.3",
     "@types/node": "^26.6.5",
     "@types/react": "^19.1.0",
@@ -28,8 +35,14 @@
     "@vitejs/plugin-react": "^4.5.0",
     "electron": "^44.9.0",
     "electron-builder": "^26.15.3",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
     "typescript": "~5.8.3",
-    "vite": "^6.3.5"
+    "typescript-eslint": "^8.71.2",
+    "vite": "^6.3.5",
+    "vitest": "^5.0.5"
   },
   "main": "electron/main.cjs",
   "build": {
