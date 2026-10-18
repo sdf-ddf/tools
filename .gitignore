@@ -8,3 +8,6 @@ shots/
 *.png
 # electron-builder 产物
 release/
+# Playwright 测试产物
+test-results/
+playwright-report/
