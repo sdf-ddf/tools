@@ -68,13 +68,18 @@ export function SettingsModal({ current, onSave, onClose }: SettingsModalProps) 
 
         <label className="field">
           <span>模型</span>
-          <input
-            value={s.model}
-            onChange={(e) => set("model", e.target.value)}
-            placeholder={
-              s.provider === "deepseek" ? "deepseek-chat / deepseek-reasoner" : "模型名"
-            }
-          />
+          {s.provider === "deepseek" ? (
+            <select value={s.model} onChange={(e) => set("model", e.target.value)}>
+              <option value="deepseek-flash">deepseek-flash(快,推荐抽取)</option>
+              <option value="deepseek-v4-pro">deepseek-v4-pro(强,复杂文档/重试)</option>
+            </select>
+          ) : (
+            <input
+              value={s.model}
+              onChange={(e) => set("model", e.target.value)}
+              placeholder="模型名"
+            />
+          )}
         </label>
 
         <div className="modal-hint">

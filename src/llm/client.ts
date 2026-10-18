@@ -19,6 +19,7 @@ export async function streamChat(req: ChatRequest, cb: ChatStreamCallbacks): Pro
     body: JSON.stringify({
       settings: req.settings,
       messages: req.messages,
+      jsonObject: req.jsonObject ?? false,
     }),
   });
 

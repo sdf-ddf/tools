@@ -15,7 +15,8 @@ export const DEFAULT_SETTINGS: LLMSettings = {
   provider: "deepseek",
   apiKey: "",
   baseUrl: "https://api.deepseek.com",
-  model: "deepseek-chat",
+  // 实测(2026-10-18)本账号可用模型:deepseek-flash / deepseek-v4-pro
+  model: "deepseek-flash",
   ollamaUrl: "http://127.0.0.1:11434",
 };
 
@@ -27,6 +28,8 @@ export interface ChatMessage {
 export interface ChatRequest {
   settings: LLMSettings;
   messages: ChatMessage[];
+  /** 请求 json_object 输出模式(抽取场景用) */
+  jsonObject?: boolean;
 }
 
 export interface ChatResult {

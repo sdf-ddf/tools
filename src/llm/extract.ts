@@ -4,10 +4,17 @@ import { streamChat } from "./client";
 const CHUNK_CHARS = 6000; // 分块阈值(调研报告落地后可调)
 const OVERLAP_CHARS = 300;
 
-/** 收集一次流式响应的完整文本 */
-export async function collectText(settings: LLMSettings, messages: ChatMessage[]): Promise<string> {
+/** 收集一次流式响应的完整文本(可选 json_object 模式) */
+export async function collectText(
+  settings: LLMSettings,
+  messages: ChatMessage[],
+  opts?: { jsonObject?: boolean }
+): Promise<string> {
   let text = "";
-  await streamChat({ settings, messages }, { onDelta: (d) => (text += d) });
+  await streamChat(
+    { settings, messages, jsonObject: opts?.jsonObject },
+    { onDelta: (d) => (text += d) }
+  );
   return text;
 }
 
@@ -83,19 +90,27 @@ const SYSTEM_PROMPT = [
 
 /** 单个文本块 → 子树 JSON */
 export async function extractChunk(settings: LLMSettings, chunk: string): Promise<unknown> {
-  const text = await collectText(settings, [
-    { role: "system", content: SYSTEM_PROMPT },
-    { role: "user", content: "请解析以下文档片段为分层 JSON:\n\n" + chunk.slice(0, CHUNK_CHARS) },
-  ]);
+  const text = await collectText(
+    settings,
+    [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: "请解析以下文档片段为分层 JSON:\n\n" + chunk.slice(0, CHUNK_CHARS) },
+    ],
+    { jsonObject: true }
+  );
   const parsed = tryParseObject(text);
   if (!parsed) {
     // 一次修复重试:把原回复与错误一起交回
-    const retry = await collectText(settings, [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: "请解析以下文档片段为分层 JSON:\n\n" + chunk.slice(0, CHUNK_CHARS) },
-      { role: "assistant", content: text.slice(0, 4000) },
-      { role: "user", content: "上面的输出不是合法 JSON。请重新输出,只输出合法 JSON 对象。" },
-    ]);
+    const retry = await collectText(
+      settings,
+      [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: "请解析以下文档片段为分层 JSON:\n\n" + chunk.slice(0, CHUNK_CHARS) },
+        { role: "assistant", content: text.slice(0, 4000) },
+        { role: "user", content: "上面的输出不是合法 JSON。请重新输出,只输出合法 JSON 对象。" },
+      ],
+      { jsonObject: true }
+    );
     return tryParseObject(retry);
   }
   return parsed;

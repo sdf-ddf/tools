@@ -30,6 +30,7 @@ function llmProxy(): Plugin {
 
         const settings = parsed?.settings;
         const messages = parsed?.messages;
+        const jsonObject = parsed?.jsonObject === true;
         if (!settings || !Array.isArray(messages)) {
           res.statusCode = 400;
           res.end(JSON.stringify({ error: "请求体缺少 settings/messages" }));
@@ -71,7 +72,14 @@ function llmProxy(): Plugin {
           body: JSON.stringify(
             settings.provider === "ollama"
               ? { model: settings.model, messages, stream: true }
-              : { model: settings.model, messages, stream: true, temperature: 0.3 }
+              : {
+                  model: settings.model,
+                  messages,
+                  stream: true,
+                  temperature: 0.3,
+                  // json_object 输出模式(抽取场景,依据 M4 调研报告实测支持)
+                  ...(jsonObject ? { response_format: { type: "json_object" } } : {}),
+                }
           ),
         });
 
