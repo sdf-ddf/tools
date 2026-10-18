@@ -34,4 +34,6 @@ export interface ContentPack {
   /** 全局主题,注入 LLM 上下文(M2 使用) */
   theme: string;
   root: LayerNode;
+  /** 跨层关系(数据流/依赖),网络图模式使用 */
+  edges?: Edge[];
 }
