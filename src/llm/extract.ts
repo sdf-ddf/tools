@@ -18,22 +18,59 @@ export async function collectText(
   return text;
 }
 
-/** 按段落切块:超过阈值才切,块间保留重叠 */
+/**
+ * 分块策略(依据调研报告):
+ * 1. 短文档(≤阈值)整篇一块;
+ * 2. 长文档先按标题行(#/##/###)切节,节内超阈值再按段落切;
+ * 3. 块间保留重叠,避免标题/上下文断裂。
+ */
 export function chunkText(doc: string): string[] {
   if (doc.length <= CHUNK_CHARS) return [doc];
-  const paras = doc.split(/\n{2,}/);
+
+  // 按标题行切分:每个标题开启一个新节
+  const headingRe = /^(#{1,3}\s.+)$/gm;
+  const cuts: number[] = [0];
+  let m: RegExpExecArray | null;
+  while ((m = headingRe.exec(doc)) !== null) {
+    if (m.index > 0) cuts.push(m.index);
+  }
+  cuts.push(doc.length);
+
+  const sections: string[] = [];
+  for (let i = 0; i < cuts.length - 1; i++) {
+    const sec = doc.slice(cuts[i], cuts[i + 1]).trim();
+    if (sec) sections.push(sec);
+  }
+
+  // 节内按段落组装,超阈值才切
   const chunks: string[] = [];
   let cur = "";
-  for (const p of paras) {
-    if ((cur + p).length > CHUNK_CHARS && cur) {
-      chunks.push(cur);
-      cur = cur.slice(-OVERLAP_CHARS) + "\n\n" + p;
+  const pushCur = () => {
+    if (cur.trim()) chunks.push(cur.trim());
+    cur = "";
+  };
+  for (const sec of sections) {
+    if (sec.length > CHUNK_CHARS) {
+      pushCur();
+      const paras = sec.split(/\n{2,}/);
+      for (const p of paras) {
+        if ((cur + p).length > CHUNK_CHARS && cur) {
+          pushCur();
+          cur = cur ? cur.slice(-OVERLAP_CHARS) + "\n\n" + p : p;
+        } else {
+          cur += (cur ? "\n\n" : "") + p;
+        }
+      }
+      pushCur();
+    } else if ((cur + sec).length > CHUNK_CHARS && cur) {
+      pushCur();
+      cur = sec;
     } else {
-      cur += (cur ? "\n\n" : "") + p;
+      cur += (cur ? "\n\n" : "") + sec;
     }
   }
-  if (cur) chunks.push(cur);
-  return chunks;
+  pushCur();
+  return chunks.length > 0 ? chunks : [doc];
 }
 
 /** 从 LLM 回复里尽力提取 JSON:去 markdown 围栏、截取首个 { 到末个 } */
