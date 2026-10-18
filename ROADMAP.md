@@ -1,0 +1,48 @@
+# Layerview 工程级路线图
+
+> 现状:功能完整的原型(30+ 原子提交、25 个 E2E 测试、调研与踩坑文档齐全),
+> 但工程化包装缺失。本文件列出到"工程级"的差距与推进顺序。
+> 状态:✅ 已完成 / 🔜 规划中。最后更新:2026-10-18。
+
+## 🔴 P0 · 可靠性(会直接伤害使用者)
+
+| # | 事项 | 状态 | 说明 |
+|---|---|---|---|
+| 1 | LLM 请求超时(120s)+ 讲解/抽取可取消 | 🔜 | client.ts 加 AbortController + 超时;NodePanel/ExtractModal 加停止按钮 |
+| 2 | Electron 单实例锁 | 🔜 | requestSingleInstanceLock + second-instance 聚焦;防双开端口冲突 |
+| 3 | 状态持久化 | 🔜 | 用户导入的内容包、最后选择、聊天历史 → localStorage;重启不丢 |
+
+## 🟠 P1 · 工程化基础设施
+
+| # | 事项 | 状态 | 说明 |
+|---|---|---|---|
+| 4 | MIT LICENSE | 🔜 | 开源必备 |
+| 5 | CHANGELOG + 语义化版本 | 🔜 | 版本 0.1.0→1.0.0;发布记录 |
+| 6 | CI/CD(GitHub Actions) | 🔜 | 提交即跑 tsc + vite build + Vitest + Playwright |
+| 7 | ESLint + Prettier | 🔜 | 统一代码风格 |
+| 8 | Vitest 单元测试 | 🔜 | validatePack / dedupeIds / chunkText / tryParseObject 等纯函数秒级覆盖 |
+| 9 | git remote 推 GitHub | 🔜 | 目前无 remote,代码仅在本机 |
+
+## 🟡 P2 · 质量与体验
+
+| # | 事项 | 状态 | 说明 |
+|---|---|---|---|
+| 10 | 错误日志/上报 | 🔜 | 主进程日志落盘;渲染层错误弹窗 |
+| 11 | API Key 加密存储 | 🔜 | electron safeStorage(替代 localStorage 明文) |
+| 12 | 键盘导航/无障碍 | 🔜 | 树节点 Tab 聚焦、Esc 关弹窗 |
+| 13 | 大数据量性能 | 🔜 | 网络图虚拟化/降采样;大内容包防卡 |
+
+## 🔵 P3 · 架构演进(读研后按需)
+
+| # | 事项 | 状态 | 说明 |
+|---|---|---|---|
+| 14 | 内容包 schema 版本化 | 🔜 | 旧包迁移机制 |
+| 15 | i18n 框架 | 🔜 | 中文硬编码收敛 |
+| 16 | 内容包分享机制 | 🔜 | 包仓库/导入 URL |
+| 17 | 白盒 Transformer 实验室 | 🔜 | transformers.js 跑真实 GPT-2,逐层注意力/激活(PRD H) |
+
+## 建议推进节奏
+
+1. **第一步(P0)**:1-2 天。做完即"日用正式工具"。
+2. **第二步(P1)**:1 周。做完即"合格开源项目"。
+3. **第三步(P2/P3)**:按需。

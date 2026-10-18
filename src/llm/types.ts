@@ -40,4 +40,6 @@ export interface ChatResult {
 
 export interface ChatStreamCallbacks {
   onDelta: (delta: string) => void;
+  /** 外部取消信号(AbortSignal 触发时中止流) */
+  signal?: AbortSignal;
 }

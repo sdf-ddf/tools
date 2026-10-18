@@ -8,6 +8,19 @@ const path = require("node:path");
 const IS_DEV = !app.isPackaged;
 const PORT = 45173; // 固定端口,仅回环监听
 
+// 单实例锁:防双开导致端口冲突
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+}
+
 // 静态根:打包后 electron/main.cjs 在 resources/app.asar/electron 下,dist 在 ../dist
 const STATIC_ROOT = path.join(__dirname, "..", "dist");
 

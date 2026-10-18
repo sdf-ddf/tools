@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LayerTree } from "./components/LayerTree";
 import { SideNav } from "./components/SideNav";
 import { NodePanel } from "./components/NodePanel";
@@ -11,6 +11,7 @@ import type { ContentPack, LayerNode } from "./types";
 import { validatePack } from "./validate";
 import { loadSettings, saveSettings } from "./llm/settings";
 import type { LLMSettings } from "./llm/types";
+import { loadState, saveState } from "./storage";
 
 function findPath(root: LayerNode, target: string): LayerNode[] | null {
   if (root.id === target) return [root];
@@ -38,12 +39,17 @@ function searchNodes(node: LayerNode, q: string, acc: LayerNode[] = []): LayerNo
 type ViewMode = "tree" | "network";
 
 export default function App() {
-  const [packs, setPacks] = useState<ContentPack[]>(BUILTIN_PACKS);
-  const [packId, setPackId] = useState(packs[0].id);
+  const saved = useMemo(() => loadState(), []);
+  const [packs, setPacks] = useState<ContentPack[]>(() =>
+    saved && saved.customPacks.length > 0 ? [...BUILTIN_PACKS, ...saved.customPacks] : BUILTIN_PACKS
+  );
+  const [packId, setPackId] = useState(() => saved?.packId ?? packs[0].id);
   const pack = packs.find((p) => p.id === packId) ?? packs[0];
-  const [selectedId, setSelectedId] = useState<string | null>(pack.root.id);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set([pack.root.id]));
-  const [viewMode, setViewMode] = useState<ViewMode>("tree");
+  const [selectedId, setSelectedId] = useState<string | null>(() => saved?.selectedId ?? pack.root.id);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(
+    () => new Set(saved?.expandedIds.length ? saved.expandedIds : [pack.root.id])
+  );
+  const [viewMode, setViewMode] = useState<ViewMode>(() => saved?.viewMode ?? "tree");
   const [searchQ, setSearchQ] = useState("");
   const [searchResults, setSearchResults] = useState<LayerNode[]>([]);
   const [importMsg, setImportMsg] = useState<string | null>(null);
@@ -54,6 +60,18 @@ export default function App() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const totalNodes = useMemo(() => collectIds(pack.root).length, [pack]);
+
+  // 状态持久化:内容包/选择/视图/展开变化时保存
+  useEffect(() => {
+    const customPacks = packs.filter((p) => !BUILTIN_PACKS.some((b) => b.id === p.id));
+    saveState({
+      customPacks,
+      packId,
+      selectedId: selectedId ?? pack.root.id,
+      viewMode,
+      expandedIds: [...expandedIds],
+    });
+  }, [packs, packId, selectedId, viewMode, expandedIds, pack.root.id]);
 
   const path = useMemo(
     () => findPath(pack.root, selectedId ?? "") ?? [pack.root],
@@ -138,7 +156,7 @@ export default function App() {
         <div className="brand">
           <span className="logo">◈</span>
           <span className="brand-name">Layerview</span>
-          <span className="brand-sub">分层透视镜 · 桌面版</span>
+          <span className="brand-sub">分层透视镜 · v1.0.0</span>
         </div>
 
         <div className="view-switch">

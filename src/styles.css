@@ -593,3 +593,6 @@ body {
 }
 .extract-progress { color: var(--accent); font-size: 12px; margin-top: 4px; }
 
+.action-btn.cancel { border-color: #fecaca; color: #dc2626; }
+.action-btn.cancel:hover:not(:disabled) { border-color: #dc2626; background: #fef2f2; }
+

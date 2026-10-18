@@ -26,6 +26,7 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // 切换节点时清空对话与错误
   useEffect(() => {
@@ -50,6 +51,8 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
 
   function runStream(msgs: ChatMessage[], initial: ChatItem) {
     const settings = loadSettings();
+    const ac = new AbortController();
+    abortRef.current = ac;
     setChat((prev) => [...prev, initial]);
     setBusy(true);
     setError(null);
@@ -67,7 +70,7 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
         return updated;
       });
     };
-    streamChat({ settings, messages: msgs }, { onDelta: update })
+    streamChat({ settings, messages: msgs }, { onDelta: update, signal: ac.signal })
       .then(() => {
         setChat((prev) => {
           const last = prev[prev.length - 1];
@@ -78,7 +81,9 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
         });
       })
       .catch((e: unknown) => {
-        setError(e instanceof Error ? e.message : String(e));
+        const msg = e instanceof Error ? e.message : String(e);
+        // 用户主动取消不算错误,只收尾
+        if (msg !== "已取消") setError(msg);
         setChat((prev) => {
           const last = prev[prev.length - 1];
           if (!last || last.role !== "assistant") return prev;
@@ -90,7 +95,14 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
           return next;
         });
       })
-      .finally(() => setBusy(false));
+      .finally(() => {
+        abortRef.current = null;
+        setBusy(false);
+      });
+  }
+
+  function handleCancel() {
+    abortRef.current?.abort(new Error("已取消"));
   }
 
   function handleExplain() {
@@ -146,12 +158,25 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
       </div>
 
       <div className="panel-actions">
-        <button className="action-btn primary" onClick={handleExplain} disabled={busy}>
-          {busy ? "生成中…" : "点选讲解"}
-        </button>
-        <button className="action-btn" onClick={handleDrilldown} disabled={busy}>
-          讲到最底层
-        </button>
+        {busy ? (
+          <>
+            <button className="action-btn primary" onClick={handleExplain} disabled>
+              生成中…
+            </button>
+            <button className="action-btn cancel" onClick={handleCancel}>
+              ✕ 停止
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="action-btn primary" onClick={handleExplain}>
+              点选讲解
+            </button>
+            <button className="action-btn" onClick={handleDrilldown}>
+              讲到最底层
+            </button>
+          </>
+        )}
       </div>
 
       {error && <div className="llm-error">{error}</div>}
