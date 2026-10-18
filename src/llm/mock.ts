@@ -6,8 +6,10 @@ export function mockChatStream(req: ChatRequest, onDelta: (d: string) => void): 
   // 注意顺序:追问提示词会内嵌历史对话(可能含"逐层下钻"字样),因此追问优先判定
   const isFollowup = lastUser.includes("用户追问:");
   const isExtract = !isFollowup && lastUser.includes("请解析以下文档片段为分层 JSON");
-  const isExplain = !isFollowup && !isExtract && lastUser.includes("四段");
-  const isDrill = !isFollowup && !isExtract && lastUser.includes("逐层下钻");
+  const isPseudo = !isFollowup && !isExtract && lastUser.includes("Python(numpy)伪代码骨架");
+  const isRepro = !isFollowup && !isExtract && lastUser.includes("复现下面这篇论文的方法");
+  const isExplain = !isFollowup && !isExtract && !isPseudo && !isRepro && lastUser.includes("四段");
+  const isDrill = !isFollowup && !isExtract && !isPseudo && !isRepro && lastUser.includes("逐层下钻");
   const nodeNameMatch = lastUser.match(/【节点名称】([^\n]+)/);
   const nodeName = nodeNameMatch ? nodeNameMatch[1] : "当前节点";
   // 追问模式下取真实问题(提示词里「用户追问:」之后的内容)
@@ -17,6 +19,51 @@ export function mockChatStream(req: ChatRequest, onDelta: (d: string) => void): 
   let text: string;
   if (isExtract) {
     text = mockExtract(lastUser);
+  } else if (isPseudo) {
+    text = [
+      "```python",
+      "import numpy as np",
+      "",
+      "def oem_retrieval(y, xa, Sa, Sy, F, K_fn, max_iter=20, tol=1e-6):",
+      "    \"\"\"最优估计反演(OEM)骨架(mock)",
+      "    y: 观测向量 (m,)",
+      "    xa: 先验状态 (n,)",
+      "    Sa, Sy: 协方差矩阵",
+      "    F: 前向模型函数",
+      "    K_fn: 雅可比函数\"\"\"",
+      "    x = xa.copy()",
+      "    for i in range(max_iter):",
+      "        K = K_fn(x)              # 雅可比 (m, n)",
+      "        dy = y - F(x)            # 观测残差",
+      "        S = K.T @ np.linalg.inv(Sy) @ K + np.linalg.inv(Sa)",
+      "        dx = np.linalg.solve(S, K.T @ np.linalg.inv(Sy) @ dy - np.linalg.inv(Sa) @ (x - xa))",
+      "        x += dx",
+      "        if np.linalg.norm(dx) < tol:",
+      "            break",
+      "    return x",
+      "```",
+      "",
+      "**实现要点(mock)**:",
+      "- 收敛判据:状态增量范数 < tol,或达到 max_iter。",
+      "- S_a 控制正则化强度:太小→过拟合噪声,太大→过度依赖先验。",
+    ].join("\n");
+  } else if (isRepro) {
+    text = [
+      "## 需要的数据(mock)",
+      "- 卫星辐亮度观测(如 AIRS/IASI L1C)",
+      "- 先验廓线(气候平均或预报场)",
+      "",
+      "## 需要的参数(mock)",
+      "- 先验协方差 S_a、观测误差协方差 S_y",
+      "",
+      "## 实现步骤(mock)",
+      "1. 构建前向模型 F(x)(辐射传输)",
+      "2. 计算雅可比 K",
+      "3. Gauss-Newton 迭代求解",
+      "",
+      "## 验证方式(mock)",
+      "- 合成数据自检:给定真实状态,前向模拟再反演,核对残差。",
+    ].join("\n");
   } else if (isFollowup) {
     text =
       '这是 mock 模式的追问回复。你问的是:"' +

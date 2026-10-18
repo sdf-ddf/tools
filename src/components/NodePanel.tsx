@@ -4,7 +4,14 @@ import type { ContentPack, LayerNode } from "../types";
 import { TYPE_COLORS, TYPE_LABELS } from "../meta";
 import { loadSettings } from "../llm/settings";
 import { streamChat } from "../llm/client";
-import { explainPrompt, drilldownPrompt, followupPrompt, type NodeContext } from "../llm/prompts";
+import {
+  explainPrompt,
+  drilldownPrompt,
+  followupPrompt,
+  pseudocodePrompt,
+  reproductionPrompt,
+  type NodeContext,
+} from "../llm/prompts";
 import type { ChatMessage } from "../llm/types";
 import { FormulaView } from "./FormulaView";
 
@@ -144,6 +151,30 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
     );
   }
 
+  /** 生成伪代码 */
+  function handlePseudocode() {
+    const userMsg = pseudocodePrompt(ctx);
+    runStream(
+      [
+        { role: "system", content: "你是 Layerview 的数值算法助手。" },
+        { role: "user", content: userMsg },
+      ],
+      { role: "assistant", content: "", streaming: true }
+    );
+  }
+
+  /** 复现清单 */
+  function handleReproduction() {
+    const userMsg = reproductionPrompt(ctx);
+    runStream(
+      [
+        { role: "system", content: "你是 Layerview 的研究复现助手。" },
+        { role: "user", content: userMsg },
+      ],
+      { role: "assistant", content: "", streaming: true }
+    );
+  }
+
   function handleDrilldown() {
     const userMsg = drilldownPrompt(ctx);
     runStream(
@@ -223,6 +254,24 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
           </>
         )}
       </div>
+
+      {!busy && (
+        <div className="panel-actions secondary">
+          <button className="action-btn" onClick={handlePseudocode}>
+            ⌨ 生成伪代码
+          </button>
+          <button className="action-btn" onClick={handleReproduction}>
+            🧪 复现清单
+          </button>
+        </div>
+      )}
+
+      {node.pseudoCode && (
+        <div className="pseudocode-block">
+          <div className="section-title">伪代码骨架(内置)</div>
+          <pre className="pseudocode-pre">{node.pseudoCode}</pre>
+        </div>
+      )}
 
       {error && <div className="llm-error">{error}</div>}
 
