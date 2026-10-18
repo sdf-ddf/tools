@@ -3,10 +3,54 @@
 
 export type NodeType = "model" | "layer" | "concept" | "formula" | "step" | "data";
 
+export type VizKind = "heatmap" | "matrix" | "histogram" | "line" | "scatter";
+
+/** 可视化绑定:节点 → 数值展示 */
 export interface VisualizationBinding {
-  kind: "heatmap" | "matrix" | "histogram" | "tree" | "scatter" | "animation";
-  dataRef: string; // 指向资源文件或内联数据
+  kind: VizKind;
+  /** 面板展示标题 */
+  title?: string;
+  /** 内联数据(小数据直接放这里) */
+  data?: VizData;
+  /** 大数组走 dataRef,指向 pack.datasets */
+  dataRef?: string;
 }
+
+export type VizData =
+  | {
+      kind: "heatmap" | "matrix";
+      /** 行标签(可选) */
+      rows?: string[];
+      /** 列标签(可选) */
+      cols?: string[];
+      /** 二维数值矩阵 */
+      values: number[][];
+      /** 色标(蓝-白-红) */
+      scale?: "blueRed";
+    }
+  | {
+      kind: "histogram";
+      /** 预分箱:每箱中心值 + 计数(避免大数组内联) */
+      centers: number[];
+      counts: number[];
+      xLabel?: string;
+    }
+  | {
+      kind: "line";
+      x: number[];
+      y: number[];
+      xLabel?: string;
+      yLabel?: string;
+    }
+  | {
+      kind: "scatter";
+      points: [number, number][];
+      xLabel?: string;
+      yLabel?: string;
+    };
+
+/** 内容包级数据集(被 dataRef 引用) */
+export type DatasetMap = Record<string, VizData>;
 
 export interface Edge {
   from: string;
@@ -36,4 +80,6 @@ export interface ContentPack {
   root: LayerNode;
   /** 跨层关系(数据流/依赖),网络图模式使用 */
   edges?: Edge[];
+  /** 数据集(dataRef 指向这里) */
+  datasets?: DatasetMap;
 }

@@ -1,7 +1,7 @@
 import type { ContentPack, LayerNode, NodeType } from "./types";
 
 const NODE_TYPES: NodeType[] = ["model", "layer", "concept", "formula", "step", "data"];
-const VIZ_KINDS = ["heatmap", "matrix", "histogram", "tree", "scatter", "animation"];
+const VIZ_KINDS = ["heatmap", "matrix", "histogram", "line", "scatter"];
 
 export interface PackValidation {
   ok: boolean;
@@ -16,6 +16,20 @@ export function validatePack(pack: unknown): PackValidation {
   if (typeof p.id !== "string" || !p.id) errors.push("pack.id 缺失");
   if (typeof p.title !== "string" || !p.title) errors.push("pack.title 缺失");
   if (typeof p.theme !== "string" || !p.theme) errors.push("pack.theme 缺失");
+
+  // datasets:必须是对象,值必须有 kind
+  if (p.datasets !== undefined) {
+    if (typeof p.datasets !== "object" || Array.isArray(p.datasets)) {
+      errors.push("pack.datasets 必须是对象");
+    } else {
+      for (const [key, d] of Object.entries(p.datasets)) {
+        if (!d || typeof d !== "object" || !VIZ_KINDS.includes((d as any).kind)) {
+          errors.push(`datasets.${key}: 数据非法或 kind 缺失`);
+        }
+      }
+    }
+  }
+
   if (!p.root || typeof p.root !== "object") {
     errors.push("pack.root 缺失");
   } else {
@@ -29,8 +43,20 @@ export function validatePack(pack: unknown): PackValidation {
       ids.add(n.id);
       if (typeof n.name !== "string" || !n.name) errors.push(`${path}: name 缺失`);
       if (!NODE_TYPES.includes(n.type)) errors.push(`${path}: type 非法 ${String(n.type)}`);
-      if (n.visualization && !VIZ_KINDS.includes(n.visualization.kind)) {
-        errors.push(`${path}: visualization.kind 非法`);
+      if (n.visualization) {
+        const v = n.visualization;
+        if (!VIZ_KINDS.includes(v.kind)) {
+          errors.push(`${path}: visualization.kind 非法 ${String(v.kind)}`);
+        }
+        if (!v.data && !v.dataRef) {
+          errors.push(`${path}: visualization 需要 data 或 dataRef`);
+        }
+        if (v.data && v.data.kind !== v.kind) {
+          errors.push(`${path}: visualization.kind 与 data.kind 不一致`);
+        }
+        if (v.dataRef && (!p.datasets || !(v.dataRef in p.datasets))) {
+          errors.push(`${path}: dataRef ${v.dataRef} 在 datasets 中不存在`);
+        }
       }
       if (n.edges) {
         n.edges.forEach((e, i) => {
