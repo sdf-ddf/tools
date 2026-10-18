@@ -4,6 +4,7 @@ import { SideNav } from "./components/SideNav";
 import { NodePanel } from "./components/NodePanel";
 import { NetworkGraph } from "./components/NetworkGraph";
 import { SettingsModal } from "./components/SettingsModal";
+import { VizDrawer } from "./components/VizDrawer";
 import { BUILTIN_PACKS } from "./data/packs";
 import type { ContentPack, LayerNode } from "./types";
 import { validatePack } from "./validate";
@@ -47,6 +48,7 @@ export default function App() {
   const [importMsg, setImportMsg] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [llmSettings, setLlmSettings] = useState<LLMSettings>(() => loadSettings());
+  const [showViz, setShowViz] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const totalNodes = useMemo(() => collectIds(pack.root).length, [pack]);
@@ -264,7 +266,18 @@ export default function App() {
         </aside>
       </main>
 
+      {showViz && (
+        <VizDrawer pack={pack} node={path[path.length - 1]} onClose={() => setShowViz(false)} />
+      )}
+
       <footer className="statusbar">
+        <button
+          className="viz-toggle"
+          onClick={() => setShowViz((v) => !v)}
+          title="查看当前节点的数值可视化"
+        >
+          ▤ 数值调试台
+        </button>
         <span>路径:</span>
         {path.map((p, i) => (
           <span key={p.id}>
