@@ -70,6 +70,21 @@ export interface LayerNode {
   visualization?: VisualizationBinding;
   /** 该节点专属的讲解提示词补充(M2 使用) */
   llmContext?: string;
+  /** formula 类型节点的 LaTeX 表达式(论文精读模式) */
+  formula?: string;
+  /** formula 类型节点的符号表(LLM 生成:符号/含义/单位/典型量级) */
+  symbols?: SymbolEntry[];
+  /** 算法节点的伪代码骨架(论文精读模式) */
+  pseudoCode?: string;
+}
+
+/** 公式符号条目(逐符号讲解用) */
+export interface SymbolEntry {
+  symbol: string; // LaTeX 符号,如 "\tau"
+  name: string; // 中文名,如 "大气透过率"
+  meaning: string; // 物理含义
+  unit?: string; // 单位
+  typical?: string; // 典型数量级(该领域内)
 }
 
 export interface ContentPack {

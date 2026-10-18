@@ -43,6 +43,20 @@ export function validatePack(pack: unknown): PackValidation {
       ids.add(n.id);
       if (typeof n.name !== "string" || !n.name) errors.push(`${path}: name 缺失`);
       if (!NODE_TYPES.includes(n.type)) errors.push(`${path}: type 非法 ${String(n.type)}`);
+      if (n.formula !== undefined && typeof n.formula !== "string") {
+        errors.push(`${path}: formula 必须是字符串`);
+      }
+      if (n.symbols !== undefined) {
+        if (!Array.isArray(n.symbols)) {
+          errors.push(`${path}: symbols 必须是数组`);
+        } else {
+          n.symbols.forEach((s, i) => {
+            if (!s || typeof s.symbol !== "string" || typeof s.meaning !== "string") {
+              errors.push(`${path}.symbols[${i}]: symbol/meaning 缺失`);
+            }
+          });
+        }
+      }
       if (n.visualization) {
         const v = n.visualization;
         if (!VIZ_KINDS.includes(v.kind)) {

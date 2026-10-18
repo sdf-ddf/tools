@@ -1,9 +1,11 @@
 import transformerJson from "./transformerPack.json";
 import remoteSensingJson from "./remoteSensingPack.json";
+import remoteSensingPaperJson from "./remoteSensingPaper.json";
 import type { ContentPack } from "../types";
 import { validatePack } from "../validate";
 
 export const BUILTIN_PACKS: ContentPack[] = [
+  remoteSensingPaperJson as unknown as ContentPack,
   transformerJson as unknown as ContentPack,
   remoteSensingJson as unknown as ContentPack,
 ];

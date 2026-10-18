@@ -270,6 +270,10 @@ const SYSTEM_PROMPT = [
   "3. id 全树唯一,用英文短串,不要用中文/空格。",
   "4. 忠实原文:name 可用中文概括,但不要编造原文没有的内容。",
   "5. 每个节点的 summary 是一句完整的话,不超过 50 字。",
+  "6. 论文精读增强:识别文档中的数学公式。公式节点 type=formula,并给出:",
+  "   - formula: 该公式的 LaTeX 表达式(务必用 \\ 作为 LaTeX 命令前缀,如 \\\\tau) ",
+  "   - symbols: 公式中每个主要符号的数组,每项 {symbol(LaTeX), name(中文名), meaning(物理含义), unit(单位), typical(该领域典型量级)}",
+  "   没有单位或量级可省略 unit/typical。公式节点也应放入对应章节的 children 下。",
 ].join("\n");
 
 /** 抽取一个文本块 → 子树 JSON。带校验反馈自修复循环。 */

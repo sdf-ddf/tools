@@ -6,6 +6,7 @@ import { loadSettings } from "../llm/settings";
 import { streamChat } from "../llm/client";
 import { explainPrompt, drilldownPrompt, followupPrompt, type NodeContext } from "../llm/prompts";
 import type { ChatMessage } from "../llm/types";
+import { FormulaView } from "./FormulaView";
 
 interface ChatItem {
   role: "user" | "assistant";
@@ -119,6 +120,30 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
     );
   }
 
+  /** 公式节点专属:逐符号讲解(符号/含义/单位/典型量级) */
+  function handleSymbolExplain() {
+    const formula = node?.formula ?? "";
+    const userMsg = [
+      "你是一位大气遥感与数学物理专家。请逐符号讲解下面这个公式。",
+      "",
+      "公式(LaTeX):",
+      formula,
+      "",
+      "请对公式中的每个符号输出一行,格式:",
+      "符号 | 中文名称 | 物理含义(一句) | 单位 | 该符号在大气遥感中的典型量级",
+      "",
+      "最后用 1-2 句总结这个公式在物理上表达了什么。",
+    ].join("\n");
+    const sys = "你是 Layerview 分层透视镜的公式讲解助手。";
+    runStream(
+      [
+        { role: "system", content: sys },
+        { role: "user", content: userMsg },
+      ],
+      { role: "assistant", content: "", streaming: true }
+    );
+  }
+
   function handleDrilldown() {
     const userMsg = drilldownPrompt(ctx);
     runStream(
@@ -161,6 +186,17 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
         <span className="depth">第 {Math.max(0, path.length - 1)} 层</span>
       </div>
 
+      {node.type === "formula" && node.formula && (
+        <div className="formula-block">
+          <FormulaView formula={node.formula} symbols={node.symbols} />
+          {node.symbols && node.symbols.length === 0 && (
+            <button className="action-btn symbol-btn" onClick={handleSymbolExplain} disabled={busy}>
+              ∑ 逐符号讲解(LLM)
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="panel-actions">
         {busy ? (
           <>
@@ -176,6 +212,11 @@ export function NodePanel({ pack, node, path, onJump }: NodePanelProps) {
             <button className="action-btn primary" onClick={handleExplain}>
               点选讲解
             </button>
+            {node.formula && node.type !== "formula" && (
+              <button className="action-btn" onClick={handleSymbolExplain}>
+                ∑ 逐符号
+              </button>
+            )}
             <button className="action-btn" onClick={handleDrilldown}>
               讲到最底层
             </button>

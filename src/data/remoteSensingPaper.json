@@ -1,0 +1,232 @@
+{
+  "id": "remote-sensing-paper",
+  "title": "大气红外遥感反演示例",
+  "theme": "大气遥感 · 辐射传输",
+  "root": {
+    "id": "rsp.root",
+    "name": "大气红外遥感反演方法",
+    "type": "model",
+    "summary": "一篇示例论文结构:从辐射传输方程出发,经权重函数分析,到最优估计反演。",
+    "children": [
+      {
+        "id": "rsp.intro",
+        "name": "引言",
+        "type": "layer",
+        "summary": "大气温度/水汽廓线反演是数值天气预报的关键。"
+      },
+      {
+        "id": "rsp.method",
+        "name": "方法",
+        "type": "layer",
+        "summary": "辐射传输正演 + 权重函数分析 + 最优估计反演。",
+        "children": [
+          {
+            "id": "rsp.rte",
+            "name": "辐射传输方程",
+            "type": "formula",
+            "summary": "晴空大气红外辐射传输的基本方程:地表发射项 + 大气上行辐射项。",
+            "formula": "R_{\\nu} = \\varepsilon_{\\nu} B_{\\nu}(T_s) \\, \\tau_{\\nu}(p_s) + \\int_{p_s}^{0} B_{\\nu}(T(p)) \\; \\frac{\\partial \\tau_{\\nu}(p)}{\\partial p} \\, dp",
+            "symbols": [
+              {
+                "symbol": "R_{\\nu}",
+                "name": "光谱辐亮度",
+                "meaning": "卫星在波数 ν 处接收到的辐射强度",
+                "unit": "W·m⁻²·sr⁻¹·(cm⁻¹)⁻¹",
+                "typical": "200~300 K 亮温对应值"
+              },
+              {
+                "symbol": "\\varepsilon_{\\nu}",
+                "name": "地表发射率",
+                "meaning": "地表辐射与同温黑体的比值",
+                "unit": "无量纲",
+                "typical": "陆地 0.9~1.0,海洋 ~0.98"
+              },
+              {
+                "symbol": "B_{\\nu}(T)",
+                "name": "普朗克函数",
+                "meaning": "温度 T 的黑体在波数 ν 处的辐射",
+                "unit": "W·m⁻²·sr⁻¹·(cm⁻¹)⁻¹",
+                "typical": "288K 地表在窗区约 6~10"
+              },
+              {
+                "symbol": "T_s",
+                "name": "地表温度",
+                "meaning": "地面温度",
+                "unit": "K",
+                "typical": "270~320 K"
+              },
+              {
+                "symbol": "\\tau_{\\nu}(p)",
+                "name": "大气透过率",
+                "meaning": "从气压层 p 到大气顶的透过率(0~1)",
+                "unit": "无量纲",
+                "typical": "窗区 ~0.9,吸收带 ~0.1"
+              },
+              {
+                "symbol": "T(p)",
+                "name": "温度廓线",
+                "meaning": "温度随气压的分布",
+                "unit": "K",
+                "typical": "对流层 290→210 K"
+              }
+            ]
+          },
+          {
+            "id": "rsp.weightfn",
+            "name": "权重函数",
+            "type": "formula",
+            "summary": "权重函数表示各大气层对卫星观测辐射的贡献,是通道选择的核心依据。",
+            "formula": "W(p) = \\frac{\\partial \\tau_{\\nu}(p)}{\\partial \\ln p}",
+            "symbols": [
+              {
+                "symbol": "W(p)",
+                "name": "权重函数",
+                "meaning": "单位对数气压层对辐射的贡献",
+                "unit": "无量纲",
+                "typical": "峰值所在层即通道的敏感层"
+              },
+              {
+                "symbol": "\\tau_{\\nu}",
+                "name": "透过率",
+                "meaning": "同上,随气压单调变化",
+                "unit": "无量纲",
+                "typical": "0~1"
+              },
+              {
+                "symbol": "p",
+                "name": "气压",
+                "meaning": "大气垂直坐标",
+                "unit": "hPa",
+                "typical": "地面 ~1000,大气顶 ~0.1"
+              }
+            ]
+          },
+          {
+            "id": "rsp.oem",
+            "name": "最优估计反演(OEM)",
+            "type": "layer",
+            "summary": "Rodgers(2000)提出的贝叶斯反演框架,以先验约束正则化病态问题。",
+            "children": [
+              {
+                "id": "rsp.cost",
+                "name": "代价函数",
+                "type": "formula",
+                "summary": "观测项 + 先验项:最小化二者加权残差。",
+                "formula": "J(x) = [y - F(x)]^T S_y^{-1} [y - F(x)] + [x - x_a]^T S_a^{-1} [x - x_a]",
+                "symbols": [
+                  {
+                    "symbol": "x",
+                    "name": "状态向量",
+                    "meaning": "待反演的大气参数(温度/水汽廓线)",
+                    "unit": "K / kg·kg⁻¹",
+                    "typical": "数十~数百维"
+                  },
+                  {
+                    "symbol": "y",
+                    "name": "观测向量",
+                    "meaning": "卫星各通道辐亮度",
+                    "unit": "W·m⁻²·sr⁻¹·(cm⁻¹)⁻¹",
+                    "typical": "通道数 ~ 几十"
+                  },
+                  {
+                    "symbol": "F(x)",
+                    "name": "前向模型",
+                    "meaning": "由状态计算辐射(即上面的 RTE)",
+                    "unit": "同 y",
+                    "typical": "RTM 如 RTTOV"
+                  },
+                  {
+                    "symbol": "S_y",
+                    "name": "观测误差协方差",
+                    "meaning": "仪器噪声 + 前向误差",
+                    "unit": "同 y²",
+                    "typical": "对角矩阵,噪声 ~0.1~1 K"
+                  },
+                  {
+                    "symbol": "x_a",
+                    "name": "先验状态",
+                    "meaning": "气候平均廓线",
+                    "unit": "同 x",
+                    "typical": "来自气候学/预报场"
+                  },
+                  {
+                    "symbol": "S_a",
+                    "name": "先验协方差",
+                    "meaning": "状态的自然变率",
+                    "unit": "同 x²",
+                    "typical": "控制反演的正则化强度"
+                  }
+                ]
+              },
+              {
+                "id": "rsp.gaussnewton",
+                "name": "Gauss-Newton 迭代",
+                "type": "step",
+                "summary": "OEM 的标准数值求解:迭代更新状态直到收敛。",
+                "pseudoCode": "x_{n+1} = x_n + (K_n^T S_y^{-1} K_n + S_a^{-1})^{-1} [ K_n^T S_y^{-1} (y - F(x_n)) - S_a^{-1} (x_n - x_a) ]"
+              },
+              {
+                "id": "rsp.avgkernel",
+                "name": "平均核矩阵",
+                "type": "formula",
+                "summary": "平均核描述反演解对真实状态的平滑程度,是诊断反演质量的核心工具。",
+                "formula": "A = \\frac{\\partial \\hat{x}}{\\partial x} = (K^T S_y^{-1} K + S_a^{-1})^{-1} K^T S_y^{-1} K",
+                "symbols": [
+                  {
+                    "symbol": "A",
+                    "name": "平均核矩阵",
+                    "meaning": "反演解对真实状态的敏感度",
+                    "unit": "无量纲",
+                    "typical": "理想=A 单位阵;实际行宽=垂直分辨率"
+                  },
+                  {
+                    "symbol": "K",
+                    "name": "雅可比矩阵",
+                    "meaning": "∂F/∂x,辐射对状态的导数",
+                    "unit": "同 y/x",
+                    "typical": "数值扰动或解析求导"
+                  },
+                  {
+                    "symbol": "\\hat{x}",
+                    "name": "反演解",
+                    "meaning": "代价函数最小的状态",
+                    "unit": "同 x",
+                    "typical": "—"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "rsp.results",
+        "name": "结果",
+        "type": "layer",
+        "summary": "权重函数峰值位置决定通道对哪一层敏感;平均核行宽给出垂直分辨率。"
+      }
+    ]
+  },
+  "edges": [
+    {
+      "from": "rsp.rte",
+      "to": "rsp.weightfn",
+      "label": "对 ln p 求导"
+    },
+    {
+      "from": "rsp.rte",
+      "to": "rsp.cost",
+      "label": "作为前向模型 F(x)"
+    },
+    {
+      "from": "rsp.cost",
+      "to": "rsp.gaussnewton",
+      "label": "迭代最小化"
+    },
+    {
+      "from": "rsp.gaussnewton",
+      "to": "rsp.avgkernel",
+      "label": "取导数得 A"
+    }
+  ]
+}
